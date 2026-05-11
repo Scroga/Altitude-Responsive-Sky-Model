@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Test" inherits="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+					This is a file in which I will describe classes other then [Node], [Object].
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="print_hello" qualifiers="const">
+			<return type="void" />
+			<description>
+							This is custom class which will print some stupid text.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="text" type="String" setter="set_text" getter="get_text" default="&quot;Some random text&quot;">
+						This is my property.
+		</member>
+	</members>
+</class>
