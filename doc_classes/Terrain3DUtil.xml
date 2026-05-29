@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Terrain3DUtil" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="as_float" qualifiers="static">
+			<return type="float" />
+			<param index="0" name="value" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="as_uint" qualifiers="static">
+			<return type="int" />
+			<param index="0" name="value" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="black_to_alpha" qualifiers="static">
+			<return type="Image" />
+			<param index="0" name="image" type="Image" />
+			<description>
+			</description>
+		</method>
+		<method name="enc_auto" qualifiers="static">
+			<return type="int" />
+			<param index="0" name="pixel" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="enc_base" qualifiers="static">
+			<return type="int" />
+			<param index="0" name="base" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="enc_blend" qualifiers="static">
+			<return type="int" />
+			<param index="0" name="blend" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="enc_hole" qualifiers="static">
+			<return type="int" />
+			<param index="0" name="pixel" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="enc_nav" qualifiers="static">
+			<return type="int" />
+			<param index="0" name="pixel" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="enc_overlay" qualifiers="static">
+			<return type="int" />
+			<param index="0" name="overlay" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="enc_uv_rotation" qualifiers="static">
+			<return type="int" />
+			<param index="0" name="rotation" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="enc_uv_scale" qualifiers="static">
+			<return type="int" />
+			<param index="0" name="scale" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="filename_to_location" qualifiers="static">
+			<return type="Vector2i" />
+			<param index="0" name="filename" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="get_base" qualifiers="static">
+			<return type="int" />
+			<param index="0" name="pixel" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_blend" qualifiers="static">
+			<return type="int" />
+			<param index="0" name="pixel" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_filled_image" qualifiers="static">
+			<return type="Image" />
+			<param index="0" name="size" type="Vector2i" />
+			<param index="1" name="color" type="Color" />
+			<param index="2" name="create_mipmaps" type="bool" />
+			<param index="3" name="format" type="int" enum="Image.Format" />
+			<description>
+			</description>
+		</method>
+		<method name="get_min_max" qualifiers="static">
+			<return type="Vector2" />
+			<param index="0" name="image" type="Image" />
+			<description>
+			</description>
+		</method>
+		<method name="get_overlay" qualifiers="static">
+			<return type="int" />
+			<param index="0" name="pixel" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_thumbnail" qualifiers="static">
+			<return type="Image" />
+			<param index="0" name="image" type="Image" />
+			<param index="1" name="size" type="Vector2i" default="Vector2i(256, 256)" />
+			<description>
+			</description>
+		</method>
+		<method name="get_uv_rotation" qualifiers="static">
+			<return type="int" />
+			<param index="0" name="pixel" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_uv_scale" qualifiers="static">
+			<return type="int" />
+			<param index="0" name="pixel" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="is_auto" qualifiers="static">
+			<return type="bool" />
+			<param index="0" name="pixel" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="is_hole" qualifiers="static">
+			<return type="bool" />
+			<param index="0" name="pixel" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="is_nav" qualifiers="static">
+			<return type="bool" />
+			<param index="0" name="pixel" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="load_image" qualifiers="static">
+			<return type="Image" />
+			<param index="0" name="file_name" type="String" />
+			<param index="1" name="cache_mode" type="int" default="0" />
+			<param index="2" name="r16_height_range" type="Vector2" default="Vector2(0, 255)" />
+			<param index="3" name="r16_size" type="Vector2i" default="Vector2i(0, 0)" />
+			<description>
+			</description>
+		</method>
+		<method name="location_to_filename" qualifiers="static">
+			<return type="String" />
+			<param index="0" name="region_location" type="Vector2i" />
+			<description>
+			</description>
+		</method>
+		<method name="luminance_to_height" qualifiers="static">
+			<return type="Image" />
+			<param index="0" name="src_rgb" type="Image" />
+			<description>
+			</description>
+		</method>
+		<method name="pack_image" qualifiers="static">
+			<return type="Image" />
+			<param index="0" name="src_rgb" type="Image" />
+			<param index="1" name="src_a" type="Image" />
+			<param index="2" name="invert_green" type="bool" default="false" />
+			<param index="3" name="invert_alpha" type="bool" default="false" />
+			<param index="4" name="normalize_alpha" type="bool" default="false" />
+			<param index="5" name="alpha_channel" type="int" default="0" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>

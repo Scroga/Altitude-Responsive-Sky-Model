@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Terrain3DAssets" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="clear_textures">
+			<return type="void" />
+			<param index="0" name="update" type="bool" default="false" />
+			<description>
+			</description>
+		</method>
+		<method name="create_mesh_thumbnails">
+			<return type="void" />
+			<param index="0" name="id" type="int" default="-1" />
+			<param index="1" name="size" type="Vector2i" default="Vector2i(128, 128)" />
+			<description>
+			</description>
+		</method>
+		<method name="get_albedo_array_rid" qualifiers="const">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="get_mesh_asset" qualifiers="const">
+			<return type="Terrain3DMeshAsset" />
+			<param index="0" name="id" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_mesh_count" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_normal_array_rid" qualifiers="const">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="get_texture" qualifiers="const">
+			<return type="Terrain3DTextureAsset" />
+			<param index="0" name="id" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_texture_ao_strengths" qualifiers="const">
+			<return type="PackedFloat32Array" />
+			<description>
+			</description>
+		</method>
+		<method name="get_texture_colors" qualifiers="const">
+			<return type="PackedColorArray" />
+			<description>
+			</description>
+		</method>
+		<method name="get_texture_count" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_texture_detiles" qualifiers="const">
+			<return type="PackedVector2Array" />
+			<description>
+			</description>
+		</method>
+		<method name="get_texture_normal_depths" qualifiers="const">
+			<return type="PackedFloat32Array" />
+			<description>
+			</description>
+		</method>
+		<method name="get_texture_roughness_mods" qualifiers="const">
+			<return type="PackedFloat32Array" />
+			<description>
+			</description>
+		</method>
+		<method name="get_texture_uv_scales" qualifiers="const">
+			<return type="PackedFloat32Array" />
+			<description>
+			</description>
+		</method>
+		<method name="save">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" default="&quot;&quot;" />
+			<description>
+			</description>
+		</method>
+		<method name="set_mesh_asset">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="mesh" type="Terrain3DMeshAsset" />
+			<description>
+			</description>
+		</method>
+		<method name="set_texture">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="texture" type="Terrain3DTextureAsset" />
+			<description>
+			</description>
+		</method>
+		<method name="update_mesh_list">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="update_texture_list">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="mesh_list" type="Terrain3DMeshAsset[]" setter="set_mesh_list" getter="get_mesh_list" default="[]">
+		</member>
+		<member name="texture_list" type="Terrain3DTextureAsset[]" setter="set_texture_list" getter="get_texture_list" default="[]">
+		</member>
+	</members>
+	<signals>
+		<signal name="meshes_changed">
+			<description>
+			</description>
+		</signal>
+		<signal name="textures_changed">
+			<description>
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="TYPE_TEXTURE" value="0" enum="AssetType">
+		</constant>
+		<constant name="TYPE_MESH" value="1" enum="AssetType">
+		</constant>
+		<constant name="MAX_TEXTURES" value="32">
+		</constant>
+		<constant name="MAX_MESHES" value="256">
+		</constant>
+	</constants>
+</class>

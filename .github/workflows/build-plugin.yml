@@ -53,7 +53,7 @@ on:
         default: false
 
 env:
-  PLUGIN_NAME: "realtimeskymodel" # Replace with your plugin name (must match .gdextension file name)
+  PLUGIN_NAME: "sky_model" # Replace with your plugin name (must match .gdextension file name)
 
 jobs:
   set-matrix:

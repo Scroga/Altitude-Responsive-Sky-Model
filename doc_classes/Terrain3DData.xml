@@ -1,0 +1,496 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Terrain3DData" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_region">
+			<return type="int" enum="Error" />
+			<param index="0" name="region" type="Terrain3DRegion" />
+			<param index="1" name="update" type="bool" default="true" />
+			<description>
+			</description>
+		</method>
+		<method name="add_region_blank">
+			<return type="Terrain3DRegion" />
+			<param index="0" name="region_location" type="Vector2i" />
+			<param index="1" name="update" type="bool" default="true" />
+			<description>
+			</description>
+		</method>
+		<method name="add_region_blankp">
+			<return type="Terrain3DRegion" />
+			<param index="0" name="global_position" type="Vector3" />
+			<param index="1" name="update" type="bool" default="true" />
+			<description>
+			</description>
+		</method>
+		<method name="calc_height_range">
+			<return type="void" />
+			<param index="0" name="recursive" type="bool" default="false" />
+			<description>
+			</description>
+		</method>
+		<method name="change_region_size">
+			<return type="void" />
+			<param index="0" name="region_size" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="do_for_regions">
+			<return type="void" />
+			<param index="0" name="area" type="Rect2i" />
+			<param index="1" name="callback" type="Callable" />
+			<description>
+			</description>
+		</method>
+		<method name="export_image" qualifiers="const">
+			<return type="int" enum="Error" />
+			<param index="0" name="file_name" type="String" />
+			<param index="1" name="map_type" type="int" enum="Terrain3DRegion.MapType" />
+			<description>
+			</description>
+		</method>
+		<method name="get_color" qualifiers="const">
+			<return type="Color" />
+			<param index="0" name="global_position" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="get_color_maps_rid" qualifiers="const">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="get_control" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="global_position" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="get_control_angle" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="global_position" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="get_control_auto" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="global_position" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="get_control_base_id" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="global_position" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="get_control_blend" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="global_position" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="get_control_hole" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="global_position" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="get_control_maps_rid" qualifiers="const">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="get_control_navigation" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="global_position" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="get_control_overlay_id" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="global_position" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="get_control_scale" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="global_position" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="get_height" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="global_position" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="get_height_maps_rid" qualifiers="const">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="get_height_range" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+			</description>
+		</method>
+		<method name="get_maps" qualifiers="const">
+			<return type="Image[]" />
+			<param index="0" name="map_type" type="int" enum="Terrain3DRegion.MapType" />
+			<description>
+			</description>
+		</method>
+		<method name="get_mesh_vertex" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="lod" type="int" />
+			<param index="1" name="filter" type="int" enum="Terrain3DData.HeightFilter" />
+			<param index="2" name="global_position" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="get_normal" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="global_position" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="get_pixel" qualifiers="const">
+			<return type="Color" />
+			<param index="0" name="map_type" type="int" enum="Terrain3DRegion.MapType" />
+			<param index="1" name="global_position" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="get_region" qualifiers="const">
+			<return type="Terrain3DRegion" />
+			<param index="0" name="region_location" type="Vector2i" />
+			<description>
+			</description>
+		</method>
+		<method name="get_region_count" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_region_id" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="region_location" type="Vector2i" />
+			<description>
+			</description>
+		</method>
+		<method name="get_region_idp" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="global_position" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="get_region_location" qualifiers="const">
+			<return type="Vector2i" />
+			<param index="0" name="global_position" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="get_region_map" qualifiers="const">
+			<return type="PackedInt32Array" />
+			<description>
+			</description>
+		</method>
+		<method name="get_region_map_index" qualifiers="static">
+			<return type="int" />
+			<param index="0" name="region_location" type="Vector2i" />
+			<description>
+			</description>
+		</method>
+		<method name="get_regionp" qualifiers="const">
+			<return type="Terrain3DRegion" />
+			<param index="0" name="global_position" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="get_regions_active" qualifiers="const">
+			<return type="Terrain3DRegion[]" />
+			<param index="0" name="copy" type="bool" default="false" />
+			<param index="1" name="deep" type="bool" default="false" />
+			<description>
+			</description>
+		</method>
+		<method name="get_regions_all" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+			</description>
+		</method>
+		<method name="get_roughness" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="global_position" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="get_texture_id" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="global_position" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="has_region" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="region_location" type="Vector2i" />
+			<description>
+			</description>
+		</method>
+		<method name="has_regionp" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="global_position" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="import_images">
+			<return type="void" />
+			<param index="0" name="images" type="Image[]" />
+			<param index="1" name="global_position" type="Vector3" default="Vector3(0, 0, 0)" />
+			<param index="2" name="offset" type="float" default="0.0" />
+			<param index="3" name="scale" type="float" default="1.0" />
+			<description>
+			</description>
+		</method>
+		<method name="is_in_slope" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="global_position" type="Vector3" />
+			<param index="1" name="slope_range" type="Vector2" />
+			<param index="2" name="invert" type="bool" default="false" />
+			<description>
+			</description>
+		</method>
+		<method name="is_region_deleted" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="region_location" type="Vector2i" />
+			<description>
+			</description>
+		</method>
+		<method name="is_region_modified" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="region_location" type="Vector2i" />
+			<description>
+			</description>
+		</method>
+		<method name="layered_to_image" qualifiers="const">
+			<return type="Image" />
+			<param index="0" name="map_type" type="int" enum="Terrain3DRegion.MapType" />
+			<description>
+			</description>
+		</method>
+		<method name="load_directory">
+			<return type="void" />
+			<param index="0" name="directory" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="load_region">
+			<return type="void" />
+			<param index="0" name="region_location" type="Vector2i" />
+			<param index="1" name="directory" type="String" />
+			<param index="2" name="update" type="bool" default="true" />
+			<description>
+			</description>
+		</method>
+		<method name="remove_region">
+			<return type="void" />
+			<param index="0" name="region" type="Terrain3DRegion" />
+			<param index="1" name="update" type="bool" default="true" />
+			<description>
+			</description>
+		</method>
+		<method name="remove_regionl">
+			<return type="void" />
+			<param index="0" name="region_location" type="Vector2i" />
+			<param index="1" name="update" type="bool" default="true" />
+			<description>
+			</description>
+		</method>
+		<method name="remove_regionp">
+			<return type="void" />
+			<param index="0" name="global_position" type="Vector3" />
+			<param index="1" name="update" type="bool" default="true" />
+			<description>
+			</description>
+		</method>
+		<method name="save_directory">
+			<return type="void" />
+			<param index="0" name="directory" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="save_region">
+			<return type="void" />
+			<param index="0" name="region_location" type="Vector2i" />
+			<param index="1" name="directory" type="String" />
+			<param index="2" name="save_16_bit" type="bool" default="false" />
+			<description>
+			</description>
+		</method>
+		<method name="set_color">
+			<return type="void" />
+			<param index="0" name="global_position" type="Vector3" />
+			<param index="1" name="color" type="Color" />
+			<description>
+			</description>
+		</method>
+		<method name="set_control">
+			<return type="void" />
+			<param index="0" name="global_position" type="Vector3" />
+			<param index="1" name="control" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="set_control_angle">
+			<return type="void" />
+			<param index="0" name="global_position" type="Vector3" />
+			<param index="1" name="degrees" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="set_control_auto">
+			<return type="void" />
+			<param index="0" name="global_position" type="Vector3" />
+			<param index="1" name="enable" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="set_control_base_id">
+			<return type="void" />
+			<param index="0" name="global_position" type="Vector3" />
+			<param index="1" name="texture_id" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="set_control_blend">
+			<return type="void" />
+			<param index="0" name="global_position" type="Vector3" />
+			<param index="1" name="blend_value" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="set_control_hole">
+			<return type="void" />
+			<param index="0" name="global_position" type="Vector3" />
+			<param index="1" name="enable" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="set_control_navigation">
+			<return type="void" />
+			<param index="0" name="global_position" type="Vector3" />
+			<param index="1" name="enable" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="set_control_overlay_id">
+			<return type="void" />
+			<param index="0" name="global_position" type="Vector3" />
+			<param index="1" name="texture_id" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="set_control_scale">
+			<return type="void" />
+			<param index="0" name="global_position" type="Vector3" />
+			<param index="1" name="percentage_modifier" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="set_height">
+			<return type="void" />
+			<param index="0" name="global_position" type="Vector3" />
+			<param index="1" name="height" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="set_pixel">
+			<return type="void" />
+			<param index="0" name="map_type" type="int" enum="Terrain3DRegion.MapType" />
+			<param index="1" name="global_position" type="Vector3" />
+			<param index="2" name="pixel" type="Color" />
+			<description>
+			</description>
+		</method>
+		<method name="set_region_deleted">
+			<return type="void" />
+			<param index="0" name="region_location" type="Vector2i" />
+			<param index="1" name="deleted" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="set_region_modified">
+			<return type="void" />
+			<param index="0" name="region_location" type="Vector2i" />
+			<param index="1" name="modified" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="set_roughness">
+			<return type="void" />
+			<param index="0" name="global_position" type="Vector3" />
+			<param index="1" name="roughness" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="update_maps">
+			<return type="void" />
+			<param index="0" name="map_type" type="int" enum="Terrain3DRegion.MapType" default="3" />
+			<param index="1" name="all_regions" type="bool" default="true" />
+			<param index="2" name="generate_mipmaps" type="bool" default="false" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="color_maps" type="Image[]" setter="" getter="get_color_maps" default="[]">
+		</member>
+		<member name="control_maps" type="Image[]" setter="" getter="get_control_maps" default="[]">
+		</member>
+		<member name="height_maps" type="Image[]" setter="" getter="get_height_maps" default="[]">
+		</member>
+		<member name="region_locations" type="Vector2i[]" setter="set_region_locations" getter="get_region_locations" default="[]">
+		</member>
+	</members>
+	<signals>
+		<signal name="color_maps_changed">
+			<description>
+			</description>
+		</signal>
+		<signal name="control_maps_changed">
+			<description>
+			</description>
+		</signal>
+		<signal name="height_maps_changed">
+			<description>
+			</description>
+		</signal>
+		<signal name="maps_changed">
+			<description>
+			</description>
+		</signal>
+		<signal name="maps_edited">
+			<param index="0" name="edited_area" type="AABB" />
+			<description>
+			</description>
+		</signal>
+		<signal name="region_map_changed">
+			<description>
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="HEIGHT_FILTER_NEAREST" value="0" enum="HeightFilter">
+		</constant>
+		<constant name="HEIGHT_FILTER_MINIMUM" value="1" enum="HeightFilter">
+		</constant>
+		<constant name="REGION_MAP_SIZE" value="32">
+		</constant>
+	</constants>
+</class>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Terrain3DCollision" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="build">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="destroy">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="get_rid" qualifiers="const">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="is_dynamic_mode" qualifiers="const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="is_editor_mode" qualifiers="const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="is_enabled" qualifiers="const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="update">
+			<return type="void" />
+			<param index="0" name="rebuild" type="bool" default="false" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="layer" type="int" setter="set_layer" getter="get_layer" default="1">
+		</member>
+		<member name="mask" type="int" setter="set_mask" getter="get_mask" default="1">
+		</member>
+		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="Terrain3DCollision.CollisionMode" default="1">
+		</member>
+		<member name="physics_material" type="PhysicsMaterial" setter="set_physics_material" getter="get_physics_material">
+		</member>
+		<member name="priority" type="float" setter="set_priority" getter="get_priority" default="1.0">
+		</member>
+		<member name="radius" type="int" setter="set_radius" getter="get_radius" default="64">
+		</member>
+		<member name="shape_size" type="int" setter="set_shape_size" getter="get_shape_size" default="16">
+		</member>
+	</members>
+	<constants>
+		<constant name="DISABLED" value="0" enum="CollisionMode">
+		</constant>
+		<constant name="DYNAMIC_GAME" value="1" enum="CollisionMode">
+		</constant>
+		<constant name="DYNAMIC_EDITOR" value="2" enum="CollisionMode">
+		</constant>
+		<constant name="FULL_GAME" value="3" enum="CollisionMode">
+		</constant>
+		<constant name="FULL_EDITOR" value="4" enum="CollisionMode">
+		</constant>
+	</constants>
+</class>

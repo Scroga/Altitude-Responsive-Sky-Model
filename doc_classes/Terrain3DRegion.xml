@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Terrain3DRegion" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="calc_height_range">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="duplicate">
+			<return type="Terrain3DRegion" />
+			<param index="0" name="deep" type="bool" default="false" />
+			<description>
+			</description>
+		</method>
+		<method name="get_data" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+			</description>
+		</method>
+		<method name="get_map" qualifiers="const">
+			<return type="Image" />
+			<param index="0" name="map_type" type="int" enum="Terrain3DRegion.MapType" />
+			<description>
+			</description>
+		</method>
+		<method name="get_maps" qualifiers="const">
+			<return type="Image[]" />
+			<description>
+			</description>
+		</method>
+		<method name="sanitize_map" qualifiers="const">
+			<return type="Image" />
+			<param index="0" name="map_type" type="int" enum="Terrain3DRegion.MapType" />
+			<param index="1" name="map" type="Image" />
+			<description>
+			</description>
+		</method>
+		<method name="sanitize_maps">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="save">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" default="&quot;&quot;" />
+			<param index="1" name="save_16_bit" type="bool" default="false" />
+			<description>
+			</description>
+		</method>
+		<method name="set_data">
+			<return type="void" />
+			<param index="0" name="data" type="Dictionary" />
+			<description>
+			</description>
+		</method>
+		<method name="set_map">
+			<return type="void" />
+			<param index="0" name="map_type" type="int" enum="Terrain3DRegion.MapType" />
+			<param index="1" name="map" type="Image" />
+			<description>
+			</description>
+		</method>
+		<method name="set_maps">
+			<return type="void" />
+			<param index="0" name="maps" type="Image[]" />
+			<description>
+			</description>
+		</method>
+		<method name="update_height">
+			<return type="void" />
+			<param index="0" name="height" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="update_heights">
+			<return type="void" />
+			<param index="0" name="low_high" type="Vector2" />
+			<description>
+			</description>
+		</method>
+		<method name="validate_map_size" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="map" type="Image" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="color_map" type="Image" setter="set_color_map" getter="get_color_map">
+		</member>
+		<member name="control_map" type="Image" setter="set_control_map" getter="get_control_map">
+		</member>
+		<member name="deleted" type="bool" setter="set_deleted" getter="is_deleted">
+		</member>
+		<member name="edited" type="bool" setter="set_edited" getter="is_edited">
+		</member>
+		<member name="height_map" type="Image" setter="set_height_map" getter="get_height_map">
+		</member>
+		<member name="height_range" type="Vector2" setter="set_height_range" getter="get_height_range" default="Vector2(0, 0)">
+		</member>
+		<member name="instances" type="Dictionary" setter="set_instances" getter="get_instances" default="{}">
+		</member>
+		<member name="location" type="Vector2i" setter="set_location" getter="get_location">
+		</member>
+		<member name="modified" type="bool" setter="set_modified" getter="is_modified">
+		</member>
+		<member name="region_size" type="int" setter="set_region_size" getter="get_region_size" default="0">
+		</member>
+		<member name="version" type="float" setter="set_version" getter="get_version" default="0.8">
+		</member>
+		<member name="vertex_spacing" type="float" setter="set_vertex_spacing" getter="get_vertex_spacing" default="1.0">
+		</member>
+	</members>
+	<constants>
+		<constant name="TYPE_HEIGHT" value="0" enum="MapType">
+		</constant>
+		<constant name="TYPE_CONTROL" value="1" enum="MapType">
+		</constant>
+		<constant name="TYPE_COLOR" value="2" enum="MapType">
+		</constant>
+		<constant name="TYPE_MAX" value="3" enum="MapType">
+		</constant>
+	</constants>
+</class>
