@@ -1,3 +1,6 @@
+# Ignore datasets
+*.dat
+
 # Godot auto generated files
 *.gen.*
 .godot/
