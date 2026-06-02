@@ -1,11 +1,12 @@
 [gd_scene load_steps=7 format=3 uid="uid://bb2lp50sjndus"]
 
-[ext_resource type="Shader" uid="uid://drhd6pdgs6a24" path="res://shaders/sky.gdshader" id="1_k01qk"]
+[ext_resource type="Shader" uid="uid://drhd6pdgs6a24" path="res://addons/sky_generator/shaders/sky.gdshader" id="1_k01qk"]
 [ext_resource type="Texture2D" uid="uid://vtfisc4bigp4" path="res://sky.exr" id="2_nntnf"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_nntnf"]
 shader = ExtResource("1_k01qk")
 shader_parameter/skyTexture = ExtResource("2_nntnf")
+shader_parameter/blur_radius_pixels = 0.0
 shader_parameter/rotation_y = 0.0
 shader_parameter/flip_x = false
 shader_parameter/flip_y = false
@@ -15,7 +16,7 @@ sky_material = SubResource("ShaderMaterial_nntnf")
 
 [sub_resource type="Environment" id="Environment_8jcgm"]
 background_mode = 2
-background_energy_multiplier = 0.5
+background_energy_multiplier = 0.2
 sky = SubResource("Sky_srg7c")
 ambient_light_source = 3
 ambient_light_color = Color(0.55, 0.55, 0.55, 1)

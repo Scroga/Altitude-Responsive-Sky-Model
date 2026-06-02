@@ -1,0 +1,124 @@
+@tool
+
+class_name SkyModel
+extends WorldEnvironment
+
+## Emitted when the environment has changed to a new resource.
+signal environment_changed
+
+const SKY_SHADER: String = "res://addons/sky_generator/shaders/sky.gdshader"
+
+## The Sun DirectionalLight.
+var sun: DirectionalLight3D
+## The Sky shader.
+var sky_material: ShaderMaterial
+# The sky texture generator
+var sky_texture_generator: SkyTextureGenerator
+
+#####################
+## Texture Generator
+#####################
+
+func _read_dataset() -> void:
+	if sky_texture_generator == null:
+		push_error("sky_texture_generator is null")
+		return
+
+	sky_texture_generator.read_dataset()
+
+func _generate_texture() -> void:
+	if sky_texture_generator == null:
+		push_error("sky_texture_generator is null")
+		return
+
+	if sky_material == null:
+		push_error("sky_material is null")
+		return
+
+	sky_texture_generator.generate()
+
+	if not Engine.is_editor_hint():
+		return
+
+	var path := "res://sky.exr"
+
+	var fs := EditorInterface.get_resource_filesystem()
+	fs.update_file(path)
+	fs.reimport_files([path])
+
+	var texture := load(path) as Texture2D
+	if texture == null:
+		push_error("Could not load texture: " + path)
+		return
+
+	sky_material.set_shader_parameter("skyTexture", texture)
+
+@export_group("Texture Generator")
+
+@export_tool_button("    Read Dataset    ")
+var read_dataset_button = _read_dataset
+
+@export_tool_button("Generate Sky Texture")
+var generate_button = _generate_texture
+
+
+
+#####################
+## Setup
+#####################
+
+func _notification(what: int) -> void:
+	# Must be after _init and before _enter_tree to properly set vars like 'sky' for setters
+	if what in [ NOTIFICATION_SCENE_INSTANTIATED, NOTIFICATION_ENTER_TREE ]:
+		_initialize()
+
+func _initialize() -> void:
+	# Create default environment
+	if environment == null:
+		environment = Environment.new()
+		environment.background_mode = Environment.BG_SKY
+		environment.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
+		#environment.ambient_light_sky_contribution = 0.7
+		#environment.ambient_light_energy = 1.0
+		#environment.reflected_light_source = Environment.REFLECTION_SOURCE_SKY
+		#environment.tonemap_mode = Environment.TONE_MAPPER_ACES
+		#environment.tonemap_white = 6
+		emit_signal("environment_changed", environment)
+		
+	# Setup Sky material & Upgrade old
+	if environment.sky == null or environment.sky.sky_material is PhysicalSkyMaterial:
+		environment.sky = Sky.new()
+		environment.sky.sky_material = ShaderMaterial.new()
+		environment.sky.sky_material.shader = load(SKY_SHADER)
+		
+			# Set a reference to the sky material for easy access.
+	sky_material = environment.sky.sky_material
+		
+	# Create default camera attributes
+	if camera_attributes == null:
+		camera_attributes = CameraAttributesPractical.new()
+	
+	if has_node("TextureGenerator"):
+		sky_texture_generator = $TextureGenerator
+	elif is_inside_tree():
+		sky_texture_generator = SkyTextureGenerator.new()
+		add_child(sky_texture_generator, true)
+		sky_texture_generator.owner = get_tree().edited_scene_root
+		
+	if has_node("SunLight"):
+		sun = $SunLight
+	elif is_inside_tree():
+		sun = DirectionalLight3D.new()
+		sun.name = "SunLight"
+		add_child(sun, true)
+		sun.owner = get_tree().edited_scene_root
+		sun.shadow_enabled = true
+
+func _set(property: StringName, value: Variant) -> bool:
+	match property:
+		"environment":
+			#sky.environment = value
+			environment = value
+			emit_signal("environment_changed", environment)
+			return true
+	return false

@@ -1,11 +1,12 @@
-[gd_scene load_steps=12 format=3 uid="uid://chol2xlfbq7cu"]
+[gd_scene load_steps=17 format=3 uid="uid://chol2xlfbq7cu"]
 
 [ext_resource type="Script" uid="uid://chstoagn42gbr" path="res://demo/src/DemoScene.gd" id="1_k7qca"]
 [ext_resource type="PackedScene" uid="uid://d2jihfohphuue" path="res://demo/components/UI.tscn" id="2_nqak5"]
 [ext_resource type="PackedScene" uid="uid://domhm87hbhbg1" path="res://demo/components/Player.tscn" id="3_ht63y"]
 [ext_resource type="PackedScene" uid="uid://djhl3foqkj4e2" path="res://demo/components/Tunnel.tscn" id="3_kdh0b"]
-[ext_resource type="PackedScene" uid="uid://bb2lp50sjndus" path="res://demo/components/Environment.tscn" id="3_yqldq"]
-[ext_resource type="Script" uid="uid://b6anfuinjihbl" path="res://addons/sky_generator/src/texture_generator_tool.gd" id="7_7c7ev"]
+[ext_resource type="Shader" uid="uid://drhd6pdgs6a24" path="res://addons/sky_generator/shaders/sky.gdshader" id="6_7c7ev"]
+[ext_resource type="Texture2D" uid="uid://vtfisc4bigp4" path="res://sky.exr" id="7_egbwy"]
+[ext_resource type="Script" uid="uid://coljff6no6xn" path="res://addons/sky_generator/src/sky_model.gd" id="7_fwrtk"]
 [ext_resource type="Terrain3DAssets" uid="uid://dal3jhw6241qg" path="res://demo/data/assets.tres" id="8_g2of2"]
 
 [sub_resource type="Gradient" id="Gradient_vr1m7"]
@@ -70,12 +71,28 @@ world_background = 2
 auto_shader = true
 dual_scaling = true
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_7c7ev"]
+shader = ExtResource("6_7c7ev")
+shader_parameter/skyTexture = ExtResource("7_egbwy")
+shader_parameter/blur_radius_pixels = 1.0
+shader_parameter/rotation_y = 0.0
+shader_parameter/flip_x = false
+shader_parameter/flip_y = false
+
+[sub_resource type="Sky" id="Sky_fwrtk"]
+sky_material = SubResource("ShaderMaterial_7c7ev")
+
+[sub_resource type="Environment" id="Environment_egbwy"]
+background_mode = 2
+sky = SubResource("Sky_fwrtk")
+ambient_light_source = 3
+
+[sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_fhs52"]
+
 [node name="Demo" type="Node"]
 script = ExtResource("1_k7qca")
 
 [node name="UI" parent="." instance=ExtResource("2_nqak5")]
-
-[node name="Environment" parent="." instance=ExtResource("3_yqldq")]
 
 [node name="Tunnel" parent="." instance=ExtResource("3_kdh0b")]
 
@@ -90,12 +107,19 @@ collision_mask = 3
 top_level = true
 metadata/_edit_lock_ = true
 
-[node name="SkyTextureGeneratorTool" type="SkyTextureGenerator" parent="."]
+[node name="SkyModel" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_egbwy")
+camera_attributes = SubResource("CameraAttributesPractical_fhs52")
+script = ExtResource("7_fwrtk")
+metadata/_custom_type_script = "uid://coljff6no6xn"
+
+[node name="SunLight" type="DirectionalLight3D" parent="SkyModel"]
+shadow_enabled = true
+
+[node name="SkyTextureGenerator" type="SkyTextureGenerator" parent="SkyModel"]
 dataset_path = "C:/Users/illy_/Desktop/Prog/BachelorThesis/GodotRealtimeSkyModel/test_project/dataset/SkyModelDataset.dat"
-sky_parameters/albedo = 0.5
-sky_parameters/altitude = 1041.0
+sky_parameters/albedo = 0.175
+sky_parameters/altitude = 825.0
 sky_parameters/elevation = 0.0
-sky_parameters/visibility = 80.4
+sky_parameters/visibility = 90.0
 sky_parameters/resolution = 1080
-script = ExtResource("7_7c7ev")
-metadata/_custom_type_script = "uid://b6anfuinjihbl"
