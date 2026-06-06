@@ -4,11 +4,13 @@ render_mode use_debanding;
 uniform sampler2D skyTexture : source_color;
 
 group_uniforms general;
-uniform float rotation_y = 0.0;
+uniform float azimuth_rad = 0.0;
+uniform float elevation_rad = 0.0;
+uniform float exposure = -5.0;
+
 uniform bool flip_x = false;
 uniform bool flip_y = false;
 
-uniform float exposure = -5.0;
 
 vec3 apply_exposure_gamma(vec3 rgb) {
 	float exp_mult = exp2(exposure);
@@ -17,16 +19,21 @@ vec3 apply_exposure_gamma(vec3 rgb) {
 	return clamp(rgb, vec3(0.0), vec3(1.0));
 }
 
+vec3 rotate_y(vec3 v, float angle) {
+	float s = sin(angle);
+	float c = cos(angle);
+
+	return vec3(
+		c * v.x - s * v.z,
+		v.y,
+		s * v.x + c * v.z
+	);
+}
+
 void sky() {
 	vec3 final_color = vec3(0.0);
 	vec3 dir = normalize(EYEDIR);
-	float s = sin(rotation_y);
-	float c = cos(rotation_y);
-	dir = vec3(
-		c * dir.x - s * dir.z,
-		dir.y,
-		s * dir.x + c * dir.z
-	);
+	dir = rotate_y(dir, azimuth_rad);
 
 	if (dir.y < 0.005) {
 		dir.y = 0.005;
