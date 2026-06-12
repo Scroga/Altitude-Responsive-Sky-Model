@@ -6,7 +6,7 @@ extends WorldEnvironment
 ## Emitted when the environment has changed to a new resource.
 signal environment_changed
 
-const SKY_SHADER: String = "res://addons/sky_generator/shaders/sky.gdshader"
+const SKY_SHADER: String = "res://addons/sky_generator/shaders/sky_material.gdshader"
 
 ## The Sun DirectionalLight.
 var sun: DirectionalLight3D
@@ -119,7 +119,8 @@ func _generate_texture() -> void:
 
 	var texture: ImageTexture = ImageTexture.create_from_image(image)
 	
-	sky_material.set_shader_parameter("skyTexture", texture)
+	sky_material.set_shader_parameter("sky_texture", texture)
+	sky_material.set_shader_parameter("altitude", _altitude)
 	
 	_update_sun()
 
@@ -169,8 +170,11 @@ func _update_sun_rotation() -> void:
 		cos(elevation_rad) * cos(azimuth_rad)
 	).normalized()
 
-	# DirectionalLight3D emits along local -Z.
-	sun.look_at(sun.global_position - sun_direction, Vector3.UP)
+# DirectionalLight3D emits along local -Z.
+	if sun.is_inside_tree():
+		sun.look_at(sun.global_position - sun_direction, Vector3.UP)
+	else:
+		sun.look_at_from_position(Vector3.ZERO, -sun_direction, Vector3.UP)
 
 #####################
 ## Setup

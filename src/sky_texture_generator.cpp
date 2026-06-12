@@ -136,11 +136,12 @@ void SkyTextureGenerator::render(
 	}
 
 	std::for_each(std::execution::par, xs.begin(), xs.end(),
-			[this, &frameIterParams, &viewPoint, &xTextureSize, &yTextureSize, &outResult](auto &&x) {
+			[this, &frameIterParams, &xTextureSize, &yTextureSize, &outResult](auto &&x) {
 				for (int y = 0; y < yTextureSize; y++) {
 					// For each pixel of the rendered image get the corresponding direction in fisheye projection.
 					const int sourceX = x + xTextureSize;
 					SkyModel::Vector3 viewDir = this->pixelToDirection(sourceX, y, yTextureSize);
+
 					viewDir = this->rotateAroundZ(viewDir, degreesToRadians(90.0));
 
 					// If the pixel lies outside the upper hemisphere, the direction will be zero. Such a pixel is kept black.
