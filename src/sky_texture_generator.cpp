@@ -194,7 +194,8 @@ void SkyTextureGenerator::renderForAltitudes(
 		double elevation,
 		double visibility,
 		int resolution,
-		std::vector<std::vector<float>> &outResult) {
+		std::vector<std::vector<float>> &outResult)
+{
 	assert(skyModel.isInitialized());
 	const unsigned int xTextureSize = resolution / 2;
 	const unsigned int yTextureSize = resolution;

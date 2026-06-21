@@ -195,6 +195,7 @@ var azimuth: float = 0.0:
 
 func _update_sun() -> void:
 	_update_sun_rotation()
+	_update_sun_temperature()
 
 func _update_sun_rotation() -> void:
 	if sun == null:
@@ -219,6 +220,26 @@ func _update_sun_rotation() -> void:
 		sun.look_at(sun.global_position - sun_direction, Vector3.UP)
 	else:
 		sun.look_at_from_position(Vector3.ZERO, -sun_direction, Vector3.UP)
+
+func _update_sun_temperature() -> void:
+	if sun == null:
+		return
+
+	if sky_texture_generator == null:
+		return
+
+	var altitude := parameters.get_altitude()
+
+	if use_runtime_altitude:
+		altitude = player_altitude
+
+	var temperature := SkyModelUtils.compute_sun_light_temperature(
+		parameters.get_elevation(),
+		altitude,
+		parameters.get_visibility()
+	)
+	sun.light_temperature = temperature
+	sun.light_color = Color.WHITE
 
 #####################
 ## Setup
