@@ -5,6 +5,7 @@
 #include <godot_cpp/godot.hpp>
 
 #include "sky_texture_generator.hpp"
+#include "sky_model_utils.hpp"
 
 using namespace godot;
 
@@ -14,6 +15,7 @@ void initialize_types(ModuleInitializationLevel p_level) {
 	}
 
 	GDREGISTER_CLASS(SkyTextureGenerator)
+	GDREGISTER_ABSTRACT_CLASS(SkyModelUtils)
 }
 
 void uninitialize_types(ModuleInitializationLevel p_level) {

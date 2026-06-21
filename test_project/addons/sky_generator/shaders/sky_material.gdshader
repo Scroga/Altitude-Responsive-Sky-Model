@@ -1,13 +1,23 @@
 shader_type sky;
 render_mode use_debanding;
 
+const int MAX_TEXTURES_COUNT = 64;
+
+group_uniforms textures;
+uniform sampler2D sky_texture;
+uniform sampler2D precomputed_textures[MAX_TEXTURES_COUNT];
+uniform float precomputed_altitudes[MAX_TEXTURES_COUNT];
+uniform int precomputed_texture_count;
+uniform bool use_precomputed_textures = false;
+
 group_uniforms general;
-uniform sampler2D sky_texture : source_color;
 uniform bool sky_visible = true;
 uniform bool sun_visible = true;
 uniform float horizon_offset = 0.0;
 uniform float azimuth_rad = 0.0;
 uniform float elevation_rad = 0.0;
+uniform float precomputed_altitude_min = 0.001;
+uniform float precomputed_altitude_max = 15000.0;
 uniform float altitude = 0.0;
 
 group_uniforms postprocessing;
@@ -56,6 +66,93 @@ vec3 compute_sun_direction(float azimuth, float elevation) {
 	));
 }
 
+void find_altitude_indices(float current_altitude, out int lower_index, out int upper_index) {
+	lower_index = 0;
+	upper_index = 0;
+
+	if (precomputed_texture_count <= 1) {
+		return;
+	}
+
+	// Below first altitude.
+	if (current_altitude <= precomputed_altitudes[0]) {
+		return;
+	}
+
+	int last_index = precomputed_texture_count - 1;
+
+	// Above last altitude.
+	if (current_altitude >= precomputed_altitudes[last_index]) {
+		lower_index = last_index;
+		upper_index = last_index;
+		return;
+	}
+
+	for (int i = 0; i < precomputed_texture_count - 1; i++) {
+		float a0 = precomputed_altitudes[i];
+		float a1 = precomputed_altitudes[i + 1];
+
+		if (current_altitude >= a0 && current_altitude <= a1) {
+			lower_index = i;
+			upper_index = i + 1;
+			return;
+		}
+	}
+}
+
+vec3 sample_single_sky_texture(vec2 uv) {
+	vec2 sample_uv = uv;
+
+	ivec2 tex_size = textureSize(sky_texture, 0);
+
+	float texel_x = 1.0 / float(tex_size.x);
+
+	sample_uv.x = abs(2.0 * uv.x - 1.0);
+	sample_uv.x = clamp(sample_uv.x, texel_x * 0.5, 1.0 - texel_x * 0.5);
+
+	return texture(sky_texture, sample_uv).rgb;
+}
+
+vec3 sample_precomputed_sky_textures(vec2 uv) {
+	vec2 sample_uv = uv;
+	
+	int i = 0;
+	
+	ivec2 tex_size = textureSize(precomputed_textures[i], 0);
+
+	float texel_x = 1.0 / float(tex_size.x);
+
+	sample_uv.x = abs(2.0 * uv.x - 1.0);
+	sample_uv.x = clamp(sample_uv.x, texel_x * 0.5, 1.0 - texel_x * 0.5);
+	
+	int lower_index = 0;
+	int upper_index = 0;
+	find_altitude_indices(altitude, lower_index, upper_index);
+	float lower_altitude = precomputed_altitudes[lower_index];
+	float upper_altitude =  precomputed_altitudes[upper_index];
+	float blend = 0.0;
+	float range = upper_altitude - lower_altitude;
+	if (range > 0.0) {
+		blend = (altitude - lower_altitude) / range;
+	}
+	
+	vec3 lower_color = texture(precomputed_textures[lower_index], sample_uv).rgb;
+	vec3 upper_color = texture(precomputed_textures[upper_index], sample_uv).rgb;
+	
+	return mix(lower_color, upper_color, blend);
+}
+
+vec3 interpolate_sky_texture(vec2 uv) {
+	vec3 sky_color = vec3(1.0, 0.0, 0.0); // red
+	if (use_precomputed_textures) {
+		sky_color = sample_precomputed_sky_textures(uv);
+	}
+	else {
+		sky_color = sample_single_sky_texture(uv);
+	}
+	return sky_color;
+}
+
 vec3 compute_sky_color(vec3 view_dir) {
 	vec3 color = vec3(0.0);
 
@@ -73,12 +170,7 @@ vec3 compute_sky_color(vec3 view_dir) {
 	);
 
 	if (distance(uv, vec2(0.5)) <= 0.5) {
-		vec2 sample_uv = uv;
-		float texel_x = 1.0 / float(textureSize(sky_texture, 0).x);
-		sample_uv.x = abs(2.0 * uv.x - 1.0);
-		sample_uv.x = clamp(sample_uv.x, texel_x * 0.5, 1.0 - texel_x * 0.5);
-
-		color = texture(sky_texture, sample_uv).rgb;
+		color = interpolate_sky_texture(uv);
 	}
 	return apply_exposure_gamma(color);
 }

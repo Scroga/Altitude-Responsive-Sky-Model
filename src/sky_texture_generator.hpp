@@ -1,14 +1,18 @@
 #ifndef SKY_TEXTURE_GENERATOR_HPP
 #define SKY_TEXTURE_GENERATOR_HPP
 
+#include <godot_cpp/classes/image.hpp>
 #include <godot_cpp/classes/node3d.hpp>
 #include <godot_cpp/classes/wrapped.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/error_macros.hpp>
-#include <godot_cpp/classes/image.hpp>
+#include <godot_cpp/variant/typed_array.hpp>
+#include <godot_cpp/variant/packed_float32_array.hpp>
 
 #include "constants.hpp"
 #include "sky_model.hpp"
+
+#include <vector>
 
 using namespace godot;
 
@@ -28,13 +32,21 @@ private:
 	/// Converts given spectrum to sRGB.
 	SkyModel::Vector3 spectrumToRGB(const Spectrum &spectrum) const;
 	/// Renders a simple fisheye RGB image of the sky.
-	void render(
-		double albedo,
-		double altitude,
-		double elevation,
-		double visibility,
-		int resolution,
-		std::vector<float> &outResult);
+	void renderSingle(
+			double albedo,
+			double altitude,
+			double elevation,
+			double visibility,
+			int resolution,
+			std::vector<float> &outResult);
+
+		void renderForAltitudes(
+			double albedo,
+			const std::vector<double>& altitudes,
+			double elevation,
+			double visibility,
+			int resolution,
+			std::vector<std::vector<float>> &outResult);
 
 	SkyModel skyModel;
 	SkyModel::AvailableData available;
@@ -63,9 +75,17 @@ public:
 	bool isInitialized() const { return skyModel.isInitialized(); }
 
 	void readDataset(const String &path, double singleVisibility);
-	Ref<Image> generate(
-		double albedo,
+
+	Ref<Image> generateSkyTexture(
+			double albedo,
 			double altitude,
+			double elevation,
+			double visibility,
+			int resolution);
+
+	TypedArray<Image> generateSkyTexturesForAltitudes(
+			double albedo,
+			const PackedFloat32Array &altitudesArray,
 			double elevation,
 			double visibility,
 			int resolution);
