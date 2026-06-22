@@ -8,6 +8,7 @@ signal environment_changed
 
 const SKY_SHADER: String = "res://addons/sky_generator/shaders/sky_material.gdshader"
 const SKY_PARAMETERS_SCRIPT: Script = preload("res://addons/sky_generator/src/parameters.gd")
+const SKY_DOME_SETTINGS_SCRIPT: Script = preload("res://addons/sky_generator/src/sky_dome_settings.gd")
 
 ## The Sun DirectionalLight.
 var sun: DirectionalLight3D
@@ -17,30 +18,10 @@ var sky_material: ShaderMaterial
 var sky_texture_generator: SkyTextureGenerator
 # Node that specifies the altitude at runtime.
 var altitude_source: Node3D
+# Parameters for sky texture generation.
 var parameters: SkyParameters = SKY_PARAMETERS_SCRIPT.new()
-
-#####################
-## Precomputed Data
-#####################
-@export_group("Precomputed Data")
-@export var precomputed_textures: Array[Texture2D] = []
-@export var precomputed_altitudes: PackedFloat32Array = PackedFloat32Array()
-
-#####################
-## Runtime Altitude
-#####################
-@export_group("Runtime Altitude")
-
-@export_node_path("Node3D")
-var altitude_source_path: NodePath
-
-var player_altitude: float = 0.0
-
-@export var use_runtime_altitude: bool = false
-
-@export var altitude_offset: float = 0.0
-
-@export var altitude_scale: float = 1.0
+# Sky dome for fog and sun.
+var sky_dome_settings: SkyDomeSettings
 
 #####################
 ## Texture Generation
@@ -78,6 +59,132 @@ func _read_dataset() -> void:
 	parameters.clamp_to_generator()
 	notify_property_list_changed()
 
+@export_tool_button("Read Dataset")
+var read_dataset_button = _read_dataset
+
+#####################
+## Precomputed Data
+#####################
+@export_group("Precomputed Data")
+@export var precomputed_textures: Array[Texture2D] = []
+@export var precomputed_altitudes: PackedFloat32Array = PackedFloat32Array()
+
+#####################
+## Runtime Altitude
+#####################
+@export_group("Runtime Altitude")
+
+@export_node_path("Node3D")
+var altitude_source_path: NodePath
+
+var player_altitude: float = 0.0
+
+@export var use_runtime_altitude: bool = false
+
+@export var altitude_offset: float = 0.0
+
+@export var altitude_scale: float = 1.0
+
+#####################
+## Display
+#####################
+@export_group("Display")
+
+@export_range(-10.0, 10.0, 0.1)
+var exposure: float = -5.0:
+	set(value):
+		exposure = value
+		if sky_material:
+			sky_material.set_shader_parameter("exposure", exposure)
+			
+@export_range(0.0, 360.0, 0.1, "degrees")
+var azimuth: float = 0.0:
+	set(value):
+		azimuth = value
+		_update_sun()
+		
+@export var sun_visible: bool = true:
+	set(value):
+		sun_visible = value
+		if sky_material:
+			sky_material.set_shader_parameter("sun_visible", sun_visible)
+
+@export var sky_visible: bool = true:
+	set(value):
+		sky_visible = value
+		if sky_material:
+			sky_material.set_shader_parameter("sky_visible", sky_visible)
+			
+@export var fog_visible: bool = true:
+	set(value):
+		fog_visible = value
+		if sky_dome_settings:
+			sky_dome_settings.fog_visible = fog_visible
+			
+@export var use_precomputed_altitudes: bool = false:
+	set(value):
+		use_precomputed_altitudes = value
+		if sky_material:
+			sky_material.set_shader_parameter("use_precomputed_textures", use_precomputed_altitudes)
+
+#####################
+## Sun Light
+#####################
+
+func _update_sun() -> void:
+	_update_sun_rotation()
+	_update_sun_temperature()
+	sky_dome_settings.update_sun_coords(
+		deg_to_rad(parameters.get_elevation()), 
+		deg_to_rad(azimuth))
+
+func _update_sun_rotation() -> void:
+	if sun == null:
+		return
+
+	var azimuth_rad := deg_to_rad(azimuth)
+	var elevation_rad := deg_to_rad(parameters.get_elevation())
+
+	if sky_material:
+		sky_material.set_shader_parameter("azimuth_rad", azimuth_rad)
+		sky_material.set_shader_parameter("elevation_rad", elevation_rad)
+
+	# Y-up Godot direction.
+	var sun_direction := Vector3(
+		cos(elevation_rad) * sin(azimuth_rad),
+		sin(elevation_rad),
+		cos(elevation_rad) * cos(azimuth_rad)
+	).normalized()
+
+# DirectionalLight3D emits along local -Z.
+	if sun.is_inside_tree():
+		sun.look_at(sun.global_position - sun_direction, Vector3.UP)
+	else:
+		sun.look_at_from_position(Vector3.ZERO, -sun_direction, Vector3.UP)
+
+func _update_sun_temperature() -> void:
+	if sun == null:
+		return
+
+	if sky_texture_generator == null:
+		return
+
+	var altitude := parameters.get_altitude()
+
+	if use_runtime_altitude:
+		altitude = player_altitude
+
+	var temperature := SkyModelUtils.compute_sun_light_temperature(
+		parameters.get_elevation(),
+		altitude,
+		parameters.get_visibility()
+	)
+	sun.light_temperature = temperature
+	sun.light_color = Color.WHITE
+
+#####################
+## Texture Generation Methods
+#####################
 func _generate_single_texture() -> void:
 	if sky_texture_generator == null:
 		push_error("sky_texture_generator is null")
@@ -158,89 +265,6 @@ func _generate_texture_for_altitudes() -> void:
 
 	_update_sun()
 	
-@export_tool_button("Read Dataset")
-var read_dataset_button = _read_dataset
-
-#####################
-## Display
-#####################
-@export_group("Display")
-
-@export_range(-10.0, 10.0, 0.1)
-var exposure: float = -5.0:
-	set(value):
-		exposure = value
-		if sky_material:
-			sky_material.set_shader_parameter("exposure", exposure)
-			
-@export_range(0.0, 360.0, 0.1, "degrees")
-var azimuth: float = 0.0:
-	set(value):
-		azimuth = value
-		_update_sun()
-		
-@export var use_precomputed_altitudes: bool = false:
-	set(value):
-		use_precomputed_altitudes = value
-
-		if sky_material:
-			sky_material.set_shader_parameter(
-				"use_precomputed_textures",
-				use_precomputed_altitudes
-			)
-			
-#####################
-## Sun Light
-#####################
-
-func _update_sun() -> void:
-	_update_sun_rotation()
-	_update_sun_temperature()
-
-func _update_sun_rotation() -> void:
-	if sun == null:
-		return
-
-	var azimuth_rad := deg_to_rad(azimuth)
-	var elevation_rad := deg_to_rad(parameters.get_elevation())
-
-	if sky_material:
-		sky_material.set_shader_parameter("azimuth_rad", azimuth_rad)
-		sky_material.set_shader_parameter("elevation_rad", elevation_rad)
-
-	# Y-up Godot direction.
-	var sun_direction := Vector3(
-		cos(elevation_rad) * sin(azimuth_rad),
-		sin(elevation_rad),
-		cos(elevation_rad) * cos(azimuth_rad)
-	).normalized()
-
-# DirectionalLight3D emits along local -Z.
-	if sun.is_inside_tree():
-		sun.look_at(sun.global_position - sun_direction, Vector3.UP)
-	else:
-		sun.look_at_from_position(Vector3.ZERO, -sun_direction, Vector3.UP)
-
-func _update_sun_temperature() -> void:
-	if sun == null:
-		return
-
-	if sky_texture_generator == null:
-		return
-
-	var altitude := parameters.get_altitude()
-
-	if use_runtime_altitude:
-		altitude = player_altitude
-
-	var temperature := SkyModelUtils.compute_sun_light_temperature(
-		parameters.get_elevation(),
-		altitude,
-		parameters.get_visibility()
-	)
-	sun.light_temperature = temperature
-	sun.light_color = Color.WHITE
-
 #####################
 ## Setup
 #####################
@@ -317,7 +341,16 @@ func _initialize() -> void:
 		sky_texture_generator = SkyTextureGenerator.new()
 		add_child(sky_texture_generator, true)
 		sky_texture_generator.owner = get_tree().edited_scene_root
-		
+	
+	if has_node("SkyDomeSettings"):
+		sky_dome_settings = $SkyDomeSettings
+	elif is_inside_tree():
+		sky_dome_settings = SKY_DOME_SETTINGS_SCRIPT.new()
+		sky_dome_settings.name = "SkyDomeSettings"
+		add_child(sky_dome_settings, true)
+		if get_tree().edited_scene_root:
+			sky_dome_settings.owner = get_tree().edited_scene_root
+	
 	if has_node("SunLight"):
 		sun = $SunLight
 	elif is_inside_tree():
@@ -326,9 +359,10 @@ func _initialize() -> void:
 		add_child(sun, true)
 		sun.owner = get_tree().edited_scene_root
 		sun.shadow_enabled = true
+	
 	if sky_texture_generator != null:
 		parameters.set_generator(sky_texture_generator)
-		
+	
 	_update_sun()
 
 func _ready() -> void:
@@ -499,9 +533,9 @@ func _property_get_revert(property: StringName) -> Variant:
 			return (parameters.get_visibility_max() + parameters.get_visibility_min()) / 2
 		"resolution":
 			return SkyParameters.DEFAULT_RESOLUTION
-		"max_precompute_altitude", "max_precomputed_altitude":
+		"max_precompute_altitude":
 			return SkyParameters.MAX_ALTITUDE
-		"precomputed_texture_count", "textures_count":
+		"precomputed_texture_count":
 			return SkyParameters.DEFAULT_PRECOMPUTED_TEXTURE_COUNT
 		"altitude_density_power":
 			return SkyParameters.DEFAULT_ALTITUDE_DENSITY_POWER

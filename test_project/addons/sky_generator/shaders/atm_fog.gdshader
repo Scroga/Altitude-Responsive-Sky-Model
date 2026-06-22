@@ -15,7 +15,6 @@ uniform float fog_falloff = 3.;
 uniform float fog_start = 0.;
 uniform float fog_end = 1000.;
 uniform vec3 sun_direction = vec3(.25, -.25, .25);
-uniform vec3 moon_direction = vec3(.45, -.25, .45);
 
 uniform float atm_darkness = .5;
 uniform float atm_sun_intensity = 30.;
@@ -32,10 +31,6 @@ uniform vec3 atm_sun_partial_mie_phase;
 uniform vec4 atm_sun_mie_tint: source_color = vec4(1.);
 uniform float atm_sun_mie_intensity = 1.;
 
-uniform vec3 atm_moon_partial_mie_phase;
-uniform vec4 atm_moon_mie_tint: source_color = vec4(.13, .18, .29, 1.);
-uniform float atm_moon_mie_intensity = .7;
-
 uniform sampler2D DEPTH_TEXTURE : hint_depth_texture, filter_linear_mipmap;
 
 varying vec4 v_angle_mult;
@@ -43,7 +38,7 @@ varying vec4 v_angle_mult;
 #include "utils.gdshaderinc"
 
 // Atmosphere
-vec3 calc_atmospheric_scatter(float sr, float sm, vec2 mu, vec3 mult, float depth) {
+vec3 calc_atmospheric_scatter(float sr, float sm, float sun_mu, vec3 mult, float depth) {
 	vec3 beta_mie = atm_beta_mie;
 	vec3 beta_ray = atm_beta_ray * atm_thickness;
 
@@ -52,9 +47,9 @@ vec3 calc_atmospheric_scatter(float sr, float sm, vec2 mu, vec3 mult, float dept
 	float extc_ff = mix(clamp_to_unit(atm_thickness * 0.5), 1.0, mult.x);
 	vec3 final_extc_factor = mix(1.0 - extc_factor, (1.0 - extc_factor) * extc_factor, extc_ff);
 
-	float rayleigh_phase = calc_rayleigh_phase(mu.x);
+	float rayleigh_phase = calc_rayleigh_phase(sun_mu);
 	vec3 BRT = beta_ray * rayleigh_phase * clamp_to_unit(depth * fog_rayleigh_depth);
-	vec3 BMT = beta_mie * calc_mie_phase(mu.x, atm_sun_partial_mie_phase);
+	vec3 BMT = beta_mie * calc_mie_phase(sun_mu, atm_sun_partial_mie_phase);
 	BMT *= atm_sun_mie_intensity * atm_sun_mie_tint.rgb * clamp_to_unit(depth * fog_mie_depth);
 
 	vec3 BRMT = (BRT + BMT) / (beta_ray + beta_mie);
@@ -63,9 +58,6 @@ vec3 calc_atmospheric_scatter(float sr, float sm, vec2 mu, vec3 mult, float dept
 
 	vec3 lcol = mix(atm_day_tint.rgb, atm_horizon_light_tint.rgb, mult.x);
 	vec3 nscatter = (1.0 - extc_factor) * atm_night_tint.rgb * clamp_to_unit(depth * fog_rayleigh_depth);
-	nscatter += calc_mie_phase(mu.y, atm_moon_partial_mie_phase) *
-		atm_moon_mie_tint.rgb * atm_moon_mie_intensity * 0.005 * clamp_to_unit(depth * fog_mie_depth);
-
 	return (scatter * lcol) + nscatter;
 }
 
@@ -112,7 +104,7 @@ void fragment() {
 	vec3 view_pos = clip_pos.xyz / clip_pos.w;
 	vec4 world_pos_hom = INV_VIEW_MATRIX * vec4(view_pos, 1.0);
 	vec3 world_position = world_pos_hom.xyz / world_pos_hom.w;
-	
+
 	// Ray from camera to world intersection point
 	vec3 intersection_ray = world_position - CAMERA_POSITION_WORLD;
 	// Unit ray direction
@@ -129,10 +121,10 @@ void fragment() {
 	float plane_hit = float(ray_direction.y < 0.) *
 					  float(plane_distance > 0.) *
 					  float(plane_distance < original_distance);
-	
+
 	// Use final distance or t_plane distance Final distance: mix original vs plane distance
 	float ray_distance = mix(original_distance, plane_distance, plane_hit);
-	
+
 	// Capped world position
 	//world_position = CAMERA_POSITION_WORLD + ray_distance * ray_direction;
 
@@ -140,13 +132,11 @@ void fragment() {
 	fog_factor *= calc_fog_falloff(ray_direction.y, 0.0, fog_falloff);
 	fog_factor *= calc_fog_distance(ray_distance);
 
-	vec2 mu = vec2(
-		dot(sun_direction, ray_direction),
-		dot(moon_direction, ray_direction)
-	);
+	float sun_mu = dot(sun_direction, ray_direction);
+
 	float sr, sm;
 	calc_simple_optical_depth(ray_direction.y + atm_level_params.z, sr, sm, atm_level_params.xy);
-	vec3 scatter = calc_atmospheric_scatter(sr, sm, mu, v_angle_mult.xyz, ray_distance);
+	vec3 scatter = calc_atmospheric_scatter(sr, sm, sun_mu, v_angle_mult.xyz, ray_distance);
 
 	vec4 fog_color = vec4(scatter, fog_factor);
 	fog_color.a = clamp(fog_color.a, 0.0, 1.0);
