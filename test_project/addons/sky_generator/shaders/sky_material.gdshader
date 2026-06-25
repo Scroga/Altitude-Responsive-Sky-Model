@@ -25,6 +25,7 @@ uniform float exposure = -5.0;
 
 group_uniforms sun;
 uniform vec4 sun_disk_color: source_color = vec4(0.996, 0.541, 0.14, 1.0);
+uniform vec4 horizon_light_tint: source_color = vec4(1.0, 0.45, 0.05, 1.0);
 uniform float sun_disk_intensity = 2.0;
 uniform float sun_disk_size = 0.015;
 uniform float sun_aureole_size = 135.0;
@@ -204,7 +205,7 @@ vec3 compute_sun_color(vec3 view_dir) {
 
 	// When sun is low, make glow more orange.
 	float sun_height = clamp(sun_dir.y, 0.0, 1.0);
-	vec3 low_sun_color = vec3(1.0, 0.45, 0.05) * 1.5;
+	vec3 low_sun_color = horizon_light_tint.xyz * 1.5;
 	vec3 high_sun_color = vec3(1.0);
 	vec3 glow_tint = mix(low_sun_color, high_sun_color, sun_height);
 

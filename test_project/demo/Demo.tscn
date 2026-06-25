@@ -90,5 +90,6 @@ assets = ExtResource("8_g2of2")
 label_size = 24
 collision_mask = 3
 mesh_lods = 10
+mesh_size = 64
 top_level = true
 metadata/_edit_lock_ = true

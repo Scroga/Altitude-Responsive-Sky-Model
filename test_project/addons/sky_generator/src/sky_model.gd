@@ -6,7 +6,7 @@ extends WorldEnvironment
 ## Emitted when the environment has changed to a new resource.
 signal environment_changed
 
-const SKY_SHADER: String = "res://addons/sky_generator/shaders/sky_material.gdshader"
+const SKY_SHADER_PATH: String = "res://addons/sky_generator/shaders/sky_material.gdshader"
 const SKY_PARAMETERS_SCRIPT: Script = preload("res://addons/sky_generator/src/parameters.gd")
 const SKY_DOME_SETTINGS_SCRIPT: Script = preload("res://addons/sky_generator/src/sky_dome_settings.gd")
 
@@ -26,7 +26,7 @@ var sky_dome_settings: SkyDomeSettings
 #####################
 ## Texture Generation
 #####################
-@export_group("Texture Generation")
+@export_group("Dataset Loading")
 
 @export_global_file("*.dat")
 var dataset_path: String = "SkyModelDataset.dat"
@@ -130,7 +130,6 @@ var azimuth: float = 0.0:
 #####################
 ## Sun Light
 #####################
-
 func _update_sun() -> void:
 	_update_sun_rotation()
 	_update_sun_temperature()
@@ -183,6 +182,13 @@ func _update_sun_temperature() -> void:
 	sun.light_color = Color.WHITE
 
 #####################
+## Fog
+#####################
+func _update_fog() -> void:
+	sky_dome_settings.update_altitude(parameters.get_altitude())
+	sky_dome_settings.update_visibility(parameters.get_visibility())
+
+#####################
 ## Texture Generation Methods
 #####################
 func _generate_single_texture() -> void:
@@ -214,6 +220,7 @@ func _generate_single_texture() -> void:
 	sky_material.set_shader_parameter("use_precomputed_textures", use_precomputed_altitudes)
 	
 	_update_sun()
+	_update_fog()
 
 func _generate_texture_for_altitudes() -> void:
 	if sky_texture_generator == null:
@@ -264,6 +271,7 @@ func _generate_texture_for_altitudes() -> void:
 	sky_material.set_shader_parameter("use_precomputed_textures", use_precomputed_altitudes)
 
 	_update_sun()
+	_update_fog()
 	
 #####################
 ## Setup
@@ -299,8 +307,6 @@ func _apply_precomputed_textures_runtime() -> void:
 	else:
 		sky_material.set_shader_parameter("altitude", parameters.get_altitude())
 
-	_update_sun()
-
 func _notification(what: int) -> void:
 	# Must be after _init and before _enter_tree to properly set vars like 'sky' for setters
 	if what in [ NOTIFICATION_SCENE_INSTANTIATED, NOTIFICATION_ENTER_TREE ]:
@@ -323,7 +329,7 @@ func _initialize() -> void:
 	if environment.sky == null or environment.sky.sky_material is PhysicalSkyMaterial:
 		environment.sky = Sky.new()
 		environment.sky.sky_material = ShaderMaterial.new()
-		environment.sky.sky_material.shader = load(SKY_SHADER)
+		environment.sky.sky_material.shader = load(SKY_SHADER_PATH)
 		
 	# Set a reference to the sky material for easy access.
 	sky_material = environment.sky.sky_material
@@ -335,21 +341,23 @@ func _initialize() -> void:
 	if camera_attributes == null:
 		camera_attributes = CameraAttributesPractical.new()
 	
+	if has_node("SkyDomeSettings"):
+		sky_dome_settings = $SkyDomeSettings
+		sky_dome_settings.set_sky_material(sky_material)
+	elif is_inside_tree():
+		sky_dome_settings = SKY_DOME_SETTINGS_SCRIPT.new()
+		sky_dome_settings.set_sky_material(sky_material)
+		sky_dome_settings.name = "SkyDomeSettings"
+		add_child(sky_dome_settings, true)
+		if get_tree().edited_scene_root:
+			sky_dome_settings.owner = get_tree().edited_scene_root
+	
 	if has_node("SkyTextureGenerator"):
 		sky_texture_generator = $SkyTextureGenerator
 	elif is_inside_tree():
 		sky_texture_generator = SkyTextureGenerator.new()
 		add_child(sky_texture_generator, true)
 		sky_texture_generator.owner = get_tree().edited_scene_root
-	
-	if has_node("SkyDomeSettings"):
-		sky_dome_settings = $SkyDomeSettings
-	elif is_inside_tree():
-		sky_dome_settings = SKY_DOME_SETTINGS_SCRIPT.new()
-		sky_dome_settings.name = "SkyDomeSettings"
-		add_child(sky_dome_settings, true)
-		if get_tree().edited_scene_root:
-			sky_dome_settings.owner = get_tree().edited_scene_root
 	
 	if has_node("SunLight"):
 		sun = $SunLight
@@ -364,6 +372,7 @@ func _initialize() -> void:
 		parameters.set_generator(sky_texture_generator)
 	
 	_update_sun()
+	_update_fog()
 
 func _ready() -> void:
 	if Engine.is_editor_hint():
@@ -371,6 +380,9 @@ func _ready() -> void:
 
 	if use_precomputed_altitudes:
 		_apply_precomputed_textures_runtime()
+		
+	_update_sun()
+	_update_fog()
 
 func _read_player_altitude() -> void:
 	if use_precomputed_altitudes == false:
@@ -391,6 +403,7 @@ func _read_player_altitude() -> void:
 	
 	if sky_material:
 		sky_material.set_shader_parameter("altitude", player_altitude)
+		sky_dome_settings.update_altitude(player_altitude)
 
 func _process(_delta: float) -> void:
 	if Engine.is_editor_hint(): 

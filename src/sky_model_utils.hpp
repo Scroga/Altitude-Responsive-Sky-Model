@@ -24,7 +24,6 @@ protected:
 				D_METHOD("generate_non_linear_altitudes", "min_altitude", "max_altitude", "count", "exponent"),
 				&SkyModelUtils::generateNonLinearAltitudes);
 
-		
 		ClassDB::bind_static_method(
 				"SkyModelUtils",
 				D_METHOD("compute_sun_light_temperature", "elevation", "altitude", "visibility"),
@@ -119,11 +118,8 @@ public:
 		const double rayleighHeightScaleKm = 8.0;
 		const double aerosolHeightScaleKm = 1.2;
 
-		const double rayleighAltitudeFactor =
-				std::exp(-altitudeKm / rayleighHeightScaleKm);
-
-		const double aerosolAltitudeFactor =
-				std::exp(-altitudeKm / aerosolHeightScaleKm);
+		const double rayleighAltitudeFactor = std::exp(-altitudeKm / rayleighHeightScaleKm);
+		const double aerosolAltitudeFactor = std::exp(-altitudeKm / aerosolHeightScaleKm);
 
 		// Visibility is meteorological range in km.
 		// Koschmieder relation: beta_extinction ~= 3.912 / visibility.
@@ -131,8 +127,7 @@ public:
 		const double betaAerosol550 = 3.912 / visibility;
 
 		// Convert horizontal extinction to approximate vertical aerosol optical depth.
-		const double aerosolTau550 =
-				betaAerosol550 * aerosolHeightScaleKm * aerosolAltitudeFactor;
+		const double aerosolTau550 = betaAerosol550 * aerosolHeightScaleKm * aerosolAltitudeFactor;
 
 		// Angstrom exponent.
 		// Higher = smaller particles, stronger blue attenuation.
@@ -153,25 +148,16 @@ public:
 			const double wavelengthM = wavelengthNm * 1.0e-9;
 			const double solarTemperature = 5778.0;
 
-			const double solar =
-					1.0 /
-					(std::pow(wavelengthM, 5.0) *
-							(std::exp(c2 / (wavelengthM * solarTemperature)) - 1.0));
+			const double solar = 1.0 / (std::pow(wavelengthM, 5.0) * (std::exp(c2 / (wavelengthM * solarTemperature)) - 1.0));
 
 			// Rayleigh vertical optical depth at sea level.
 			// Common compact approximation around visible wavelengths.
-			const double rayleighTau =
-					0.008735 *
-					std::pow(wavelengthUm, -4.08) *
-					rayleighAltitudeFactor;
+			const double rayleighTau = 0.008735 * std::pow(wavelengthUm, -4.08) * rayleighAltitudeFactor;
 
 			// Aerosol optical depth from visibility.
-			const double aerosolTau =
-					aerosolTau550 *
-					std::pow(wavelengthUm / 0.55, -angstromAlpha);
+			const double aerosolTau = aerosolTau550 * std::pow(wavelengthUm / 0.55, -angstromAlpha);
 
-			const double transmittance =
-					std::exp(-airMass * (rayleighTau + aerosolTau));
+			const double transmittance = std::exp(-airMass * (rayleighTau + aerosolTau));
 
 			const double spectrum = solar * transmittance;
 

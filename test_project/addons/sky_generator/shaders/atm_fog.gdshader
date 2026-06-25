@@ -4,30 +4,30 @@
 shader_type spatial;
 render_mode blend_mix, cull_front, unshaded, fog_disabled;
 
+uniform float tonemap_level : hint_range(0.0, 1.0) = 1.0;
+uniform float fog_exposure = 1.0;
 
-uniform vec2 color_correction;
-
-uniform float sea_level: hint_range(-2048,2048,.01) = 0.0;
-uniform float fog_density = .0001;
-uniform float fog_rayleigh_depth = .115;
-uniform float fog_mie_depth = 0.;
-uniform float fog_falloff = 3.;
-uniform float fog_start = 0.;
+uniform float sea_level: hint_range(-2048,2048,.001) = 0.0;
+uniform float fog_density = 0.0001;
+uniform float fog_rayleigh_depth = 0.115;
+uniform float fog_mie_depth = 0.0;
+uniform float fog_falloff = 3.0;
+uniform float fog_start = 0.0;
 uniform float fog_end = 1000.;
-uniform vec3 sun_direction = vec3(.25, -.25, .25);
+uniform vec3 sun_direction = vec3(0.25, -0.25, 0.25);
 
-uniform float atm_darkness = .5;
-uniform float atm_sun_intensity = 30.;
-uniform vec4 atm_day_tint: source_color = vec4(.78, .85, .98, 1.);
-uniform vec4 atm_horizon_light_tint: source_color = vec4(.98, .73, .49, 1.);
-uniform vec4 atm_night_tint: source_color = vec4(.16, .2, .25, 1.);
-uniform vec3 atm_level_params = vec3(1., 0., 0.);
-uniform float atm_thickness = .7;
+uniform float atm_darkness = 0.5;
+uniform float atm_sun_intensity = 30.0;
+uniform vec4 atm_day_tint: source_color = vec4(0.78, 0.85, 0.98, 1.0);
+uniform vec4 atm_horizon_light_tint: source_color = vec4(0.98, 0.73, 0.49, 1.0);
+uniform vec4 atm_night_tint: source_color = vec4(0.16, 0.2, 0.25, 1.0);
+uniform vec3 atm_level_params = vec3(1.0, 0.0, 0.0);
+uniform float atm_thickness = 0.5;
 
 uniform vec3 atm_beta_ray;
 uniform vec3 atm_beta_mie;
 
-uniform vec3 atm_sun_partial_mie_phase;
+uniform vec3 atm_sun_partial_mie_phase = vec3(0.0, 0.0, 0.0);
 uniform vec4 atm_sun_mie_tint: source_color = vec4(1.);
 uniform float atm_sun_mie_intensity = 1.;
 
@@ -56,7 +56,8 @@ vec3 calc_atmospheric_scatter(float sr, float sm, float sun_mu, vec3 mult, float
 	vec3 scatter = atm_sun_intensity * (BRMT * final_extc_factor) * atm_day_tint.rgb * mult.y;
 	scatter = mix(scatter, scatter * (1.0 - extc_factor), atm_darkness);
 
-	vec3 lcol = mix(atm_day_tint.rgb, atm_horizon_light_tint.rgb, mult.x);
+	//vec3 lcol = mix(atm_day_tint.rgb, atm_horizon_light_tint.rgb, mult.x);
+	vec3 lcol = mix(atm_day_tint.rgb, max(atm_horizon_light_tint.rgb, vec3(0.15)), mult.x);
 	vec3 nscatter = (1.0 - extc_factor) * atm_night_tint.rgb * clamp_to_unit(depth * fog_rayleigh_depth);
 	return (scatter * lcol) + nscatter;
 }
@@ -140,7 +141,7 @@ void fragment() {
 
 	vec4 fog_color = vec4(scatter, fog_factor);
 	fog_color.a = clamp(fog_color.a, 0.0, 1.0);
-	fog_color.rgb = apply_photo_tonemap(fog_color.rgb, color_correction.y, color_correction.x);
+	fog_color.rgb = apply_photo_tonemap(fog_color.rgb, fog_exposure, tonemap_level);
 
 	ALBEDO = fog_color.rgb;
 	ALPHA = fog_color.a;
