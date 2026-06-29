@@ -207,12 +207,16 @@ func _generate_single_texture() -> void:
 		parameters.get_visibility(),
 		parameters.get_resolution()
 	)
-
+	
 	if image == null:
-		push_error("Sky image generation failed.")
+		push_error("Sky image generation failed: image is null")
 		return
-
+	
 	var texture: ImageTexture = ImageTexture.create_from_image(image)
+	
+	if texture == null:
+		push_error("Sky image generation failed: texture is null")
+		return
 	
 	sky_material.set_shader_parameter("sky_texture", texture)
 	sky_material.set_shader_parameter("altitude", parameters.get_altitude())
@@ -399,7 +403,7 @@ func _read_player_altitude() -> void:
 
 	var source_altitude: float = altitude_source.global_position.y
 	var sky_altitude: float = source_altitude * altitude_scale + altitude_offset
-	player_altitude = clampf(sky_altitude, parameters.get_altitude_min(), parameters.get_altitude_max())
+	player_altitude = clampf(sky_altitude, parameters.get_altitude_min(), parameters.get_max_precompute_altitude())
 	
 	if sky_material:
 		sky_material.set_shader_parameter("altitude", player_altitude)

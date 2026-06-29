@@ -34,6 +34,10 @@ uniform float soft_glow_intensity = 0.03;
 
 uniform float sun_horizon_fade_width = 0.03;
 
+const bool extend_texture = false;
+
+#include "utils.gdshaderinc"
+
 vec3 rotate_y(vec3 v, float angle) {
 	float s = sin(angle);
 	float c = cos(angle);
@@ -45,26 +49,11 @@ vec3 rotate_y(vec3 v, float angle) {
 	);
 }
 
-// Creates binary mask for the sun disk.
-float calc_disk_mask(vec3 view_dir, vec3 sun_dir, lowp float radius) {
-	float dist = length(view_dir - sun_dir);
-	return 1.0 - step(radius, dist);
-}
-
 vec3 apply_exposure_gamma(vec3 rgb) {
 	float exp_mult = exp2(exposure);
 	rgb = max(rgb * exp_mult, vec3(0.0));
 	rgb = pow(rgb, vec3(1.0 / 2.2));
 	return clamp(rgb, vec3(0.0), vec3(1.0));
-}
-
-// Compute sun direction based on azimuth and elevation of the sun.
-vec3 compute_sun_direction(float azimuth, float elevation) {
-	return normalize(vec3(
-		cos(elevation) * sin(azimuth),
-		sin(elevation),
-		cos(elevation) * cos(azimuth)
-	));
 }
 
 void find_altitude_indices(float current_altitude, out int lower_index, out int upper_index) {
@@ -154,12 +143,12 @@ vec3 interpolate_sky_texture(vec2 uv) {
 	return sky_color;
 }
 
-vec3 compute_sky_color(vec3 view_dir) {
+vec3 calc_sky_color(vec3 view_dir) {
 	vec3 color = vec3(0.0);
 
 	vec3 sky_dir = normalize(rotate_y(view_dir, azimuth_rad));
 
-	if (sky_dir.y < 0.005) {
+	if (extend_texture && sky_dir.y < 0.005) {
 		sky_dir.y = 0.005;
 	}
 
@@ -176,10 +165,10 @@ vec3 compute_sky_color(vec3 view_dir) {
 	return apply_exposure_gamma(color);
 }
 
-vec3 compute_sun_color(vec3 view_dir) {
+vec3 calc_sun_color(vec3 view_dir) {
 	vec3 color = vec3(0.0);
 
-	vec3 sun_dir = compute_sun_direction(azimuth_rad, elevation_rad);
+	vec3 sun_dir = calc_sun_direction(azimuth_rad, elevation_rad);
 
 	float horizon_mask = smoothstep(0.0, sun_horizon_fade_width, view_dir.y + horizon_offset);
 
@@ -219,12 +208,13 @@ void sky() {
 	vec3 sky = vec3(0.0);
 	vec3 sun = vec3(0.0);
 
-	vec3 view_dir = EYEDIR;
-
+	vec3 sun_coords = EYEDIR;
+	vec3 sky_coords = calc_sky_coords(EYEDIR, altitude);
+	
 	if (sky_visible)
-		sky = compute_sky_color(view_dir);
+		sky = calc_sky_color(sky_coords);
 	if (sun_visible)
-		sun = compute_sun_color(view_dir);
+		sun = calc_sun_color(sun_coords);
 
 	vec3 color = sky+ sun;
 	COLOR = color.rgb;

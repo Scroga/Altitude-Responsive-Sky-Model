@@ -27,8 +27,8 @@ vec3 adjust_contrast(vec3 vec, float level) {
 	return mix(vec, vec * vec * vec, level); // pow3
 }
 
-vec3 apply_photo_tonemap(vec3 color, float exposure, float level) {
-	color.rgb *= exposure;
+vec3 apply_photo_tonemap(vec3 color, float expos, float level) {
+	color.rgb *= expos;
 	return mix(color.rgb, 1.0 - exp(-color.rgb), level);
 }
 
@@ -40,6 +40,21 @@ float calc_mie_phase(float mu, vec3 partial) {
 	float denominator = partial.y - partial.z * mu;
 	float safe_denominator = max(denominator, 0.0001); // Prevent division by zero on negative powers
 	return PI4 * partial.x * pow(safe_denominator, -1.5);
+}
+
+// Creates binary mask for the sun disk.
+float calc_disk_mask(vec3 view_dir, vec3 sun_dir, lowp float radius) {
+	float dist = length(view_dir - sun_dir);
+	return 1.0 - step(radius, dist);
+}
+
+// Compute sun direction based on azimuth and elevation of the sun.
+vec3 calc_sun_direction(float azimuth, float elevation) {
+	return normalize(vec3(
+		cos(elevation) * sin(azimuth),
+		sin(elevation),
+		cos(elevation) * cos(azimuth)
+	));
 }
 
 // Simplifield for more performance
@@ -61,4 +76,11 @@ void calc_optical_depth(float y, out float sr, out float sm, vec2 params) {
 
 	sr = zenith * RAYLEIGH_ZENITH_LENGTH;
 	sm = zenith * MIE_ZENITH_LENGTH;
+}
+
+vec3 calc_sky_coords(vec3 view_dir, float altitude_p) {
+	float shift = 0.1;
+	view_dir += shift;
+	
+	return normalize(view_dir);
 }

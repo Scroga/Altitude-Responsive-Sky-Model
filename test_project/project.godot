@@ -10,7 +10,7 @@ config_version=5
 
 [application]
 
-config/name="Realtime_Sky_Model"
+config/name="Sky_Model"
 run/main_scene="uid://chol2xlfbq7cu"
 config/features=PackedStringArray("4.5", "GL Compatibility")
 
