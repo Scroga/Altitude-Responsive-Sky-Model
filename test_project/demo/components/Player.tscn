@@ -1,7 +1,7 @@
 [gd_scene load_steps=7 format=3 uid="uid://domhm87hbhbg1"]
 
-[ext_resource type="Script" path="res://demo/src/Player.gd" id="1_nm1yx"]
-[ext_resource type="Script" path="res://demo/src/CameraManager.gd" id="2_loos7"]
+[ext_resource type="Script" uid="uid://dajlr3n5wjwmb" path="res://demo/src/Player.gd" id="1_nm1yx"]
+[ext_resource type="Script" uid="uid://b62ppvc03a6b1" path="res://demo/src/CameraManager.gd" id="2_loos7"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_smq6u"]
 
@@ -29,7 +29,7 @@ margin = 0.5
 [node name="Camera3D" type="Camera3D" parent="CameraManager/Arm"]
 unique_name_in_owner = true
 near = 0.25
-far = 16384.0
+far = 500000.0
 
 [node name="CollisionShapeBody" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0)
