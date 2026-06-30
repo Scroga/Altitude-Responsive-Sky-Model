@@ -1,11 +1,9 @@
 [gd_scene load_steps=11 format=3 uid="uid://chol2xlfbq7cu"]
 
-[ext_resource type="Script" uid="uid://chstoagn42gbr" path="res://demo/src/DemoScene.gd" id="1_k7qca"]
-[ext_resource type="PackedScene" uid="uid://d2jihfohphuue" path="res://demo/components/UI.tscn" id="2_nqak5"]
-[ext_resource type="PackedScene" uid="uid://domhm87hbhbg1" path="res://demo/components/Player.tscn" id="3_ht63y"]
-[ext_resource type="Terrain3DAssets" uid="uid://dal3jhw6241qg" path="res://demo/data/assets.tres" id="8_g2of2"]
-
-[sub_resource type="SphereMesh" id="SphereMesh_8wcvr"]
+[ext_resource type="Script" uid="uid://chstoagn42gbr" path="res://sky_model/demo/src/DemoScene.gd" id="1_umghc"]
+[ext_resource type="PackedScene" uid="uid://d2jihfohphuue" path="res://sky_model/demo/components/UI.tscn" id="2_eaos1"]
+[ext_resource type="PackedScene" uid="uid://domhm87hbhbg1" path="res://sky_model/demo/components/Player.tscn" id="3_wlawv"]
+[ext_resource type="Terrain3DAssets" uid="uid://dal3jhw6241qg" path="res://sky_model/demo/data/assets.tres" id="4_7c7ev"]
 
 [sub_resource type="Gradient" id="Gradient_vr1m7"]
 offsets = PackedFloat32Array(0.2, 1)
@@ -831,25 +829,24 @@ auto_shader = true
 dual_scaling = true
 shader_override = SubResource("Shader_7c7ev")
 
+[sub_resource type="SphereMesh" id="SphereMesh_8wcvr"]
+height = 0.5
+is_hemisphere = true
+
 [node name="Demo" type="Node"]
-script = ExtResource("1_k7qca")
+script = ExtResource("1_umghc")
 
-[node name="UI" parent="." instance=ExtResource("2_nqak5")]
+[node name="UI" parent="." instance=ExtResource("2_eaos1")]
 
-[node name="Player" parent="." instance=ExtResource("3_ht63y")]
+[node name="Player" parent="." instance=ExtResource("3_wlawv")]
 transform = Transform3D(-0.99999964, 0, -8.742275e-08, 0, 1, 0, 8.742275e-08, 0, -0.99999964, 687.09766, 708.1538, 0)
 first_person = true
 gravity_enabled = false
 
-[node name="DebugSphere" type="MeshInstance3D" parent="."]
-transform = Transform3D(12742000, 0, 0, 0, 12742000, 0, 0, 0, 12742000, 0, -6371000, 0)
-mesh = SubResource("SphereMesh_8wcvr")
-skeleton = NodePath("")
-
 [node name="Terrain3D" type="Terrain3D" parent="."]
-data_directory = "res://demo/data"
+data_directory = "res://sky_model/demo/data"
 material = SubResource("Terrain3DMaterial_jrc01")
-assets = ExtResource("8_g2of2")
+assets = ExtResource("4_7c7ev")
 collision_mode = 0
 collision_mask = 3
 mesh_lods = 10
@@ -858,3 +855,10 @@ vertex_spacing = 1.2
 cull_margin = 1000.0
 top_level = true
 metadata/_edit_lock_ = true
+
+[node name="DebugSphere" type="MeshInstance3D" parent="."]
+transform = Transform3D(12742000, 0, 0, 0, 12742000, 0, 0, 0, 12742000, 0, -6371000, 0)
+visible = false
+cast_shadow = 0
+mesh = SubResource("SphereMesh_8wcvr")
+skeleton = NodePath("")

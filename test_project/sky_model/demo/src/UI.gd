@@ -20,7 +20,7 @@ func _process(p_delta) -> void:
 			Move speed: Wheel,+/-,Shift
 			Camera View: V
 			Gravity toggle: G
-			Collision toggle: C
+			
 
 			Window
 			Quit: F8
