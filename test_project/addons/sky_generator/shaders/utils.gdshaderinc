@@ -79,8 +79,8 @@ void calc_optical_depth(float y, out float sr, out float sm, vec2 params) {
 }
 
 vec3 calc_sky_coords(vec3 view_dir, float altitude_p) {
-	float shift = 0.1;
+	float shift = 0.00;
 	view_dir += shift;
-	
+
 	return normalize(view_dir);
 }

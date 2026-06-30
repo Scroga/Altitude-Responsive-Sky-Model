@@ -34,7 +34,7 @@ uniform float soft_glow_intensity = 0.03;
 
 uniform float sun_horizon_fade_width = 0.03;
 
-const bool extend_texture = false;
+const bool extend_texture = true;
 
 #include "utils.gdshaderinc"
 

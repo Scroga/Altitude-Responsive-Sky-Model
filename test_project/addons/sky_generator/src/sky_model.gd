@@ -217,10 +217,10 @@ func _generate_single_texture() -> void:
 	if texture == null:
 		push_error("Sky image generation failed: texture is null")
 		return
-	
+		
+	use_precomputed_altitudes = false;
 	sky_material.set_shader_parameter("sky_texture", texture)
 	sky_material.set_shader_parameter("altitude", parameters.get_altitude())
-	use_precomputed_altitudes = false;
 	sky_material.set_shader_parameter("use_precomputed_textures", use_precomputed_altitudes)
 	
 	_update_sun()
