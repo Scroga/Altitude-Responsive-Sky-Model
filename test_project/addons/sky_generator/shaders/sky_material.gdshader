@@ -13,7 +13,6 @@ uniform bool use_precomputed_textures = false;
 group_uniforms general;
 uniform bool sky_visible = true;
 uniform bool sun_visible = true;
-uniform float horizon_offset = 0.0;
 uniform float azimuth_rad = 0.0;
 uniform float elevation_rad = 0.0;
 uniform float precomputed_altitude_min = 0.001;
@@ -34,20 +33,12 @@ uniform float soft_glow_intensity = 0.03;
 
 uniform float sun_horizon_fade_width = 0.03;
 
-const bool extend_texture = true;
+const float SKY_DIRECTION_Y_OFFSET_MIN = 0.01;
+const float SKY_DIRECTION_Y_OFFSET_MAX = 0.08;
+
+const bool clamp_sky_to_horizon = true;
 
 #include "utils.gdshaderinc"
-
-vec3 rotate_y(vec3 v, float angle) {
-	float s = sin(angle);
-	float c = cos(angle);
-
-	return vec3(
-		c * v.x - s * v.z,
-		v.y,
-		s * v.x + c * v.z
-	);
-}
 
 vec3 apply_exposure_gamma(vec3 rgb) {
 	float exp_mult = exp2(exposure);
@@ -105,16 +96,16 @@ vec3 sample_single_sky_texture(vec2 uv) {
 
 vec3 sample_precomputed_sky_textures(vec2 uv) {
 	vec2 sample_uv = uv;
-	
+
 	int i = 0;
-	
+
 	ivec2 tex_size = textureSize(precomputed_textures[i], 0);
 
 	float texel_x = 1.0 / float(tex_size.x);
 
 	sample_uv.x = abs(2.0 * uv.x - 1.0);
 	sample_uv.x = clamp(sample_uv.x, texel_x * 0.5, 1.0 - texel_x * 0.5);
-	
+
 	int lower_index = 0;
 	int upper_index = 0;
 	find_altitude_indices(altitude, lower_index, upper_index);
@@ -125,10 +116,10 @@ vec3 sample_precomputed_sky_textures(vec2 uv) {
 	if (range > 0.0) {
 		blend = (altitude - lower_altitude) / range;
 	}
-	
+
 	vec3 lower_color = texture(precomputed_textures[lower_index], sample_uv).rgb;
 	vec3 upper_color = texture(precomputed_textures[upper_index], sample_uv).rgb;
-	
+
 	return mix(lower_color, upper_color, blend);
 }
 
@@ -148,7 +139,7 @@ vec3 calc_sky_color(vec3 view_dir) {
 
 	vec3 sky_dir = normalize(rotate_y(view_dir, azimuth_rad));
 
-	if (extend_texture && sky_dir.y < 0.005) {
+	if (clamp_sky_to_horizon && sky_dir.y < 0.005) {
 		sky_dir.y = 0.005;
 	}
 
@@ -165,12 +156,13 @@ vec3 calc_sky_color(vec3 view_dir) {
 	return apply_exposure_gamma(color);
 }
 
-vec3 calc_sun_color(vec3 view_dir) {
+vec3 calc_sun_color(vec3 view_dir, float normalized_altitude) {
 	vec3 color = vec3(0.0);
 
 	vec3 sun_dir = calc_sun_direction(azimuth_rad, elevation_rad);
 
-	float horizon_mask = smoothstep(0.0, sun_horizon_fade_width, view_dir.y + horizon_offset);
+	float altitude_horizon_fade_offset  = normalized_altitude * (SKY_DIRECTION_Y_OFFSET_MAX - SKY_DIRECTION_Y_OFFSET_MIN);
+	float horizon_mask = smoothstep(0.0, sun_horizon_fade_width, view_dir.y + altitude_horizon_fade_offset);
 
 	float close_to_sun = max(dot(view_dir, sun_dir), 0.0);
 
@@ -204,17 +196,42 @@ vec3 calc_sun_color(vec3 view_dir) {
 	return (sun_disk + glow_color + core_color) * horizon_mask;
 }
 
+vec3 calc_sky_coords(vec3 view_dir, float altitude_t) {
+	view_dir.y += mix(
+		SKY_DIRECTION_Y_OFFSET_MIN,
+		SKY_DIRECTION_Y_OFFSET_MAX,
+		altitude_t
+	);
+
+	return normalize(view_dir);
+}
+
+vec3 calc_sun_coords(vec3 view_dir, float normalized_altitude) {
+	view_dir.y += SKY_DIRECTION_Y_OFFSET_MIN;
+
+	return normalize(view_dir);
+}
+
 void sky() {
 	vec3 sky = vec3(0.0);
 	vec3 sun = vec3(0.0);
 
-	vec3 sun_coords = EYEDIR;
-	vec3 sky_coords = calc_sky_coords(EYEDIR, altitude);
-	
+	float normalized_altitude = clamp(
+		(altitude - precomputed_altitude_min) /
+		max(precomputed_altitude_max - precomputed_altitude_min, 0.0001),
+		0.0,
+		1.0
+	);
+
+	vec3 view_dir = EYEDIR;
+
+	vec3 sun_coords = calc_sun_coords(view_dir, normalized_altitude);
+	vec3 sky_coords = calc_sky_coords(view_dir, normalized_altitude);
+
 	if (sky_visible)
 		sky = calc_sky_color(sky_coords);
 	if (sun_visible)
-		sun = calc_sun_color(sun_coords);
+		sun = calc_sun_color(sun_coords, normalized_altitude);
 
 	vec3 color = sky+ sun;
 	COLOR = color.rgb;

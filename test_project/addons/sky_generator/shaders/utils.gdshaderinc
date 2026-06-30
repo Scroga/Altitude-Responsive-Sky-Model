@@ -78,9 +78,43 @@ void calc_optical_depth(float y, out float sr, out float sm, vec2 params) {
 	sm = zenith * MIE_ZENITH_LENGTH;
 }
 
-vec3 calc_sky_coords(vec3 view_dir, float altitude_p) {
-	float shift = 0.00;
-	view_dir += shift;
+vec3 rotate_x(vec3 v, float angle) {
+	float s = sin(angle);
+	float c = cos(angle);
 
-	return normalize(view_dir);
+	return vec3(
+		v.x,
+		c * v.y - s * v.z,
+		s * v.y + c * v.z
+	);
+}
+
+vec3 rotate_y(vec3 v, float angle) {
+	float s = sin(angle);
+	float c = cos(angle);
+
+	return vec3(
+		c * v.x - s * v.z,
+		v.y,
+		s * v.x + c * v.z
+	);
+}
+
+vec3 rotate_z(vec3 v, float angle) {
+	float s = sin(angle);
+	float c = cos(angle);
+
+	return vec3(
+		c * v.x - s * v.y,
+		s * v.x + c * v.y,
+		v.z
+	);
+}
+
+vec3 rotate_xyz(vec3 dir, vec3 angles) {
+	dir = rotate_x(dir, angles.x);
+	dir = rotate_y(dir, angles.y);
+	dir = rotate_z(dir, angles.z);
+
+	return normalize(dir);
 }
