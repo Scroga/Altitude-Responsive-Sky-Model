@@ -1,7 +1,7 @@
 shader_type sky;
 render_mode use_debanding;
 
-const int MAX_TEXTURES_COUNT = 64;
+const int MAX_TEXTURES_COUNT = 32;
 
 group_uniforms textures;
 uniform sampler2D sky_texture;

@@ -12,21 +12,13 @@ var sky_material: ShaderMaterial
 var altitude: float = 0.0
 var visibility: float = 23.0
 
-const MAX_FOG_FALLOFF = 40;
+const MAX_FOG_FALLOFF = 30;
 
 func update_sun_coords(altitude: float, azimuth: float) -> void:
 	if not is_scene_built:
 		return
 	var sun_direction = _spherical_to_cartesian(altitude, azimuth)
 	fog_material.set_shader_parameter("sun_direction", sun_direction)
-
-func update_visibility(visibility_param: float) -> void:
-	visibility = visibility_param
-	_update_fog_from_atmosphere()
-
-func update_altitude(altitude_param: float) -> void:
-	altitude = altitude_param
-	_update_fog_from_atmosphere()
 
 func set_sky_material(material: ShaderMaterial) -> void:
 	sky_material = material
@@ -61,6 +53,11 @@ func _build_scene() -> void:
 	is_scene_built = true
 	_apply_all_parameters()
 
+func update_fog_params(altitude_param: float, visibility_param: float) -> void:
+	altitude = altitude_param
+	visibility = visibility_param
+	_update_fog_from_atmosphere()
+	
 func _update_fog_from_atmosphere() -> void:
 	if not is_scene_built:
 		return
@@ -84,6 +81,7 @@ func _update_fog_from_atmosphere() -> void:
 	fog_material.set_shader_parameter("fog_rayleigh_depth", effective_rayleigh_depth)
 	fog_material.set_shader_parameter("fog_mie_depth", effective_mie_depth)
 	fog_material.set_shader_parameter("fog_falloff", effective_fog_falloff)
+	fog_material.set_shader_parameter("viewer_altitude", altitude);
 
 func _apply_all_parameters() -> void:
 	if not is_scene_built:
