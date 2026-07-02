@@ -24,6 +24,23 @@ var parameters: SkyParameters = SKY_PARAMETERS_SCRIPT.new()
 var sky_dome_settings: SkyDomeSettings
 
 #####################
+## Helper
+#####################
+func _build_precomputed_texture_array(images: Array[Image]) -> Texture2DArray:
+	if images.is_empty():
+		push_error("Cannot create Texture2DArray: image array is empty.")
+		return null
+
+	var texture_array := Texture2DArray.new()
+	var err: Error = texture_array.create_from_images(images)
+
+	if err != OK:
+		push_error("Failed to create Texture2DArray. Error code: " + str(err))
+		return null
+
+	return texture_array
+
+#####################
 ## Texture Generation
 #####################
 @export_group("Dataset Loading")
@@ -66,7 +83,7 @@ var read_dataset_button = _read_dataset
 ## Precomputed Data
 #####################
 @export_group("Precomputed Data")
-@export var precomputed_textures: Array[Texture2D] = []
+@export var precomputed_textures: Array[Image] = []
 @export var precomputed_altitudes: PackedFloat32Array = PackedFloat32Array()
 
 #####################
@@ -244,10 +261,8 @@ func _generate_texture_for_altitudes() -> void:
 		max_altitude, 
 		texture_count, 
 		parameters.get_altitude_density_power())
-
-	precomputed_textures.clear()
-	precomputed_textures.resize(texture_count)
 	
+	precomputed_textures.clear()
 	for i in range(0, texture_count):
 		var altitude = precomputed_altitudes[i]
 		var image: Image = sky_texture_generator.generate_texture(
@@ -262,9 +277,16 @@ func _generate_texture_for_altitudes() -> void:
 			push_error("Failed to generate sky texture for altitude: " + str(altitude))
 			continue
 
-		precomputed_textures[i] = ImageTexture.create_from_image(image)
+		precomputed_textures.append(image)
+		
+	if precomputed_textures.is_empty():
+		push_error("No sky texture images were generated.")
+		return
+
+	var precomputed_texture_array: Texture2DArray = _build_precomputed_texture_array(precomputed_textures);
+	if (precomputed_texture_array == null): return
 	
-	sky_material.set_shader_parameter("precomputed_textures", precomputed_textures)
+	sky_material.set_shader_parameter("precomputed_textures_array", precomputed_texture_array)
 	sky_material.set_shader_parameter("precomputed_altitudes", precomputed_altitudes)
 	sky_material.set_shader_parameter("precomputed_texture_count", texture_count)
 	sky_material.set_shader_parameter("precomputed_altitude_min", min_altitude)
@@ -275,7 +297,7 @@ func _generate_texture_for_altitudes() -> void:
 
 	_update_sun()
 	_update_fog()
-	
+
 #####################
 ## Setup
 #####################
@@ -283,10 +305,10 @@ func _generate_texture_for_altitudes() -> void:
 func _apply_precomputed_textures_runtime() -> void:
 	if sky_material == null:
 		return
-	if precomputed_textures == null:
+	if precomputed_textures.is_empty():
 		print("No textures where precomputed.")
 		return
-	if precomputed_altitudes == null:
+	if precomputed_altitudes.is_empty():
 		print("No altitudes where precomputed.")
 		return
 
@@ -297,7 +319,10 @@ func _apply_precomputed_textures_runtime() -> void:
 	
 	use_precomputed_altitudes = true
 	
-	sky_material.set_shader_parameter("precomputed_textures", precomputed_textures)
+	var precomputed_texture_array: Texture2DArray = _build_precomputed_texture_array(precomputed_textures);
+	if (precomputed_texture_array == null): return
+		
+	sky_material.set_shader_parameter("precomputed_textures_array", precomputed_texture_array)
 	sky_material.set_shader_parameter("precomputed_altitudes", precomputed_altitudes)
 	sky_material.set_shader_parameter("precomputed_texture_count", texture_count)
 	sky_material.set_shader_parameter("precomputed_altitude_min", min_altitude)
@@ -406,7 +431,7 @@ func _read_player_altitude() -> void:
 	
 	if sky_material:
 		sky_material.set_shader_parameter("altitude", player_altitude)
-		sky_dome_settings.update_fog_params(parameters.get_altitude(), parameters.get_visibility())
+		sky_dome_settings.update_fog_params(player_altitude, parameters.get_visibility())
 
 func _process(_delta: float) -> void:
 	if Engine.is_editor_hint(): 

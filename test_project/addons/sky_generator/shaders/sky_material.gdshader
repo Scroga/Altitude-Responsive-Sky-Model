@@ -5,7 +5,7 @@ const int MAX_TEXTURES_COUNT = 32;
 
 group_uniforms textures;
 uniform sampler2D sky_texture;
-uniform sampler2D precomputed_textures[MAX_TEXTURES_COUNT];
+uniform sampler2DArray precomputed_textures_array : filter_linear, repeat_disable;
 uniform float precomputed_altitudes[MAX_TEXTURES_COUNT];
 uniform int precomputed_texture_count;
 uniform bool use_precomputed_textures = false;
@@ -95,11 +95,13 @@ vec3 sample_single_sky_texture(vec2 uv) {
 }
 
 vec3 sample_precomputed_sky_textures(vec2 uv) {
+	if (precomputed_texture_count <= 0) {
+		return vec3(0.0);
+	}
+	
 	vec2 sample_uv = uv;
 
-	int i = 0;
-
-	ivec2 tex_size = textureSize(precomputed_textures[i], 0);
+	ivec3 tex_size = textureSize(precomputed_textures_array, 0);
 
 	float texel_x = 1.0 / float(tex_size.x);
 
@@ -108,17 +110,21 @@ vec3 sample_precomputed_sky_textures(vec2 uv) {
 
 	int lower_index = 0;
 	int upper_index = 0;
+	
 	find_altitude_indices(altitude, lower_index, upper_index);
+	
 	float lower_altitude = precomputed_altitudes[lower_index];
 	float upper_altitude =  precomputed_altitudes[upper_index];
+	
 	float blend = 0.0;
 	float range = upper_altitude - lower_altitude;
+	
 	if (range > 0.0) {
 		blend = (altitude - lower_altitude) / range;
 	}
 
-	vec3 lower_color = texture(precomputed_textures[lower_index], sample_uv).rgb;
-	vec3 upper_color = texture(precomputed_textures[upper_index], sample_uv).rgb;
+	vec3 lower_color = texture(precomputed_textures_array, vec3(sample_uv, float(lower_index))).rgb;
+	vec3 upper_color = texture(precomputed_textures_array, vec3(sample_uv, float(upper_index))).rgb;
 
 	return mix(lower_color, upper_color, blend);
 }
