@@ -19,7 +19,7 @@ uniform float high_altitude_sunset_tint = 0.15;
 uniform float falloff_at_max_altitude = 50.0;
 uniform float falloff_altitude_curve : hint_range(0.25, 8.0) = 4.0;
 
-uniform float falloff_low_visibility = 3.0;
+uniform float falloff_low_visibility = 4.0;
 uniform float falloff_high_visibility = 6.0;
 
 uniform float visibility = 0.0;
@@ -78,7 +78,7 @@ vec3 calc_atmospheric_scatter(float sr, float sm, float sun_mu, vec3 mult, float
 	vec3 BRMT = (BRT + BMT) / (beta_ray + beta_mie);
 	vec3 scatter = atm_sun_intensity * (BRMT * final_extc_factor) * atm_day_tint.rgb * mult.y;
 	scatter = mix(scatter, scatter * (1.0 - extc_factor), atm_darkness);
-	
+
 	// reduce the sunset/horizon tint at high altitude
 	float horizon_tint_amount = mult.x * altitude_sun_factor;
 	vec3 lcol = mix(atm_day_tint.rgb, max(atm_horizon_light_tint.rgb, vec3(0.15)), horizon_tint_amount);
@@ -115,13 +115,13 @@ float calc_ray_distance(vec3 ray_direction, vec3 camera_pos, float original_dist
 	float plane_hit = float(ray_direction.y < 0.) *
 					  float(plane_distance > 0.) *
 					  float(plane_distance < original_distance);
-	
+
 	float ray_distance = mix(original_distance, plane_distance, plane_hit);
 	return ray_distance;
 }
 
 float calc_fog_density() {
-	float visibility_factor = clamp(23.0 / visibility, 0.15, 8.0);
+	float visibility_factor = clamp((visibility_min * 2.0) / visibility, 0.15, 7.5);
 	return fog_density * visibility_factor;
 }
 
@@ -133,14 +133,14 @@ float calc_fog_falloff() {
 
 	float altitude_t = clamp(viewer_altitude / max(altitude_max, 0.0001), 0.0, 1.0 );
 	altitude_t = pow(altitude_t, falloff_altitude_curve);
-	
+
 	return mix(sea_level_falloff, falloff_at_max_altitude, altitude_t);
 }
 
-float calc_fog_factor(vec3 ray_direction, float ray_distance) {	
+float calc_fog_factor(vec3 ray_direction, float ray_distance) {
 	// Calculate fog exponent.
 	float fog_factor = 1.0 - clamp_to_unit(exp2(-ray_distance * calc_fog_density()));
-	
+
 	float horizon_mu = calc_spherical_horizon_mu(viewer_altitude, planet_radius);
 	// Blend between flat horizon and spherical horizon.
 	float curved_mu = mix(ray_direction.y, ray_direction.y - horizon_mu, horizon_roundness);
@@ -148,9 +148,9 @@ float calc_fog_factor(vec3 ray_direction, float ray_distance) {
 	curved_mu *= horizon_curve_strength;
 
 	fog_factor *= clamp_to_unit(exp(-(curved_mu) * calc_fog_falloff()));
-	
+
 	fog_factor *= calc_fog_distance(ray_distance);
-	
+
 	return fog_factor;
 }
 
@@ -174,23 +174,23 @@ void fragment() {
 	vec3 view_pos = clip_pos.xyz / clip_pos.w;
 	vec4 world_pos_hom = INV_VIEW_MATRIX * vec4(view_pos, 1.0);
 	vec3 world_position = world_pos_hom.xyz / world_pos_hom.w;
-	
+
 	// Ray from camera to world intersection point
 	vec3 intersection_ray = world_position - CAMERA_POSITION_WORLD;
 	// Unit ray direction
 	vec3 ray_direction = normalize(intersection_ray);
-	
+
 	float original_distance = length(intersection_ray);
 
 	float ray_distance = calc_ray_distance(ray_direction, CAMERA_POSITION_WORLD, original_distance);
 
 	float fog_factor = calc_fog_factor(ray_direction, ray_distance);
-	
+
 	float sun_mu = dot(sun_direction, ray_direction);
 
 	float high_altitude_factor = smoothstep(high_altitude_start, high_altitude_end, viewer_altitude);
 	float altitude_sun_factor = mix(1.0, high_altitude_sunset_tint, high_altitude_factor);
-	
+
 	float sr, sm;
 	calc_simple_optical_depth(ray_direction.y + atm_level_params.z, sr, sm, atm_level_params.xy);
 	vec3 scatter = calc_atmospheric_scatter(sr, sm, sun_mu, v_angle_mult.xyz, ray_distance, altitude_sun_factor);
