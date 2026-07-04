@@ -10,7 +10,7 @@ var fog_material: ShaderMaterial
 var sky_material: ShaderMaterial
 
 var altitude: float = 0.0
-var visibility: float = 23.0
+var visibility: float = 131.8
 
 const MAX_FOG_FALLOFF = 30;
 
@@ -53,35 +53,39 @@ func _build_scene() -> void:
 	is_scene_built = true
 	_apply_all_parameters()
 
-func update_fog_params(altitude_param: float, visibility_param: float) -> void:
+func update_altitude(altitude_param: float):
 	altitude = altitude_param
-	visibility = visibility_param
-	_update_fog_from_atmosphere()
-	
-func _update_fog_from_atmosphere() -> void:
-	if not is_scene_built:
-		return
+	if fog_material:
+		fog_material.set_shader_parameter("viewer_altitude", altitude);
 		
-	var visibility_km: float = max(visibility, 0.1)
-	var visibility_factor: float = clamp(23.0 / visibility_km, 0.15, 8.0)
-
-	var altitude_m: float = max(altitude, 0.0)
-	var altitude_factor: float = exp(-altitude_m / 2500.0)
+func update_visibility(visibility_param: float):
+	visibility = visibility_param
+	if fog_material:
+		fog_material.set_shader_parameter("visibility", visibility_param);
 	
-	var effective_density: float = fog_density * visibility_factor
-	var effective_end: float = fog_end / max(visibility_factor, 0.001)
-	var effective_rayleigh_depth: float = fog_rayleigh_depth * visibility_factor * altitude_factor
-	var effective_mie_depth: float = fog_mie_depth * visibility_factor * altitude_factor
-	
-	var altitude_t := clamp(altitude / 15000.0, 0.0, 1.0)
-	var effective_fog_falloff := lerp(fog_falloff, 50.0, altitude_t)
-
-	fog_material.set_shader_parameter("fog_density", effective_density)
-	fog_material.set_shader_parameter("fog_end", effective_end)
-	fog_material.set_shader_parameter("fog_rayleigh_depth", effective_rayleigh_depth)
-	fog_material.set_shader_parameter("fog_mie_depth", effective_mie_depth)
-	fog_material.set_shader_parameter("fog_falloff", effective_fog_falloff)
-	fog_material.set_shader_parameter("viewer_altitude", altitude);
+#func _update_fog_from_atmosphere() -> void:
+	#if not is_scene_built:
+		#return
+		#
+	#var visibility_km: float = max(visibility, 0.1)
+	#var visibility_factor: float = clamp(23.0 / visibility_km, 0.15, 8.0)
+#
+	#var altitude_m: float = max(altitude, 0.0)
+	#var altitude_factor: float = exp(-altitude_m / 2500.0)
+	#
+	#var effective_density: float = fog_density * visibility_factor
+	#var effective_end: float = fog_end / max(visibility_factor, 0.001)
+	#var effective_rayleigh_depth: float = fog_rayleigh_depth * visibility_factor * altitude_factor
+	#var effective_mie_depth: float = fog_mie_depth * visibility_factor * altitude_factor
+	#
+	#var altitude_t := clamp(altitude / 15000.0, 0.0, 1.0)
+	#var effective_fog_falloff := lerp(fog_falloff, 50.0, altitude_t)
+#
+	#fog_material.set_shader_parameter("fog_density", effective_density)
+	#fog_material.set_shader_parameter("fog_end", effective_end)
+	#fog_material.set_shader_parameter("fog_rayleigh_depth", effective_rayleigh_depth)
+	#fog_material.set_shader_parameter("fog_mie_depth", effective_mie_depth)
+	#fog_material.set_shader_parameter("fog_falloff", effective_fog_falloff)
 
 func _apply_all_parameters() -> void:
 	if not is_scene_built:
@@ -114,8 +118,8 @@ func _apply_all_parameters() -> void:
 	fog_material.set_shader_parameter("fog_falloff", fog_falloff)
 	fog_material.set_shader_parameter("fog_rayleigh_depth", fog_rayleigh_depth)
 	fog_material.set_shader_parameter("fog_mie_depth", fog_mie_depth)
-	
-	_update_fog_from_atmosphere()
+	fog_material.set_shader_parameter("viewer_altitude", altitude);
+	fog_material.set_shader_parameter("visibility", visibility)
 
 func _spherical_to_cartesian(altitude: float, azimuth: float) -> Vector3:
 	var cos_alt := cos(altitude)
@@ -315,20 +319,23 @@ var sun_horizon_fade_width: float = 0.03:
 		if is_scene_built:
 			fog_mesh.visible = fog_visible
 
-@export_exp_easing() var fog_density: float = 0.0007:
+@export_exp_easing() var fog_density: float = 0.0004:
 	set(value):
 		fog_density = value
-		_update_fog_from_atmosphere()
+		if is_scene_built:
+			fog_material.set_shader_parameter("fog_density", fog_density)
 
 @export_range(0.0, 5000.0) var fog_start: float = 0.0:
 	set(value):
 		fog_start = value
-		_update_fog_from_atmosphere()
+		if is_scene_built:
+			fog_material.set_shader_parameter("fog_start", fog_start)
 
 @export_range(0.0, 5000.0) var fog_end: float = 1000.0:
 	set(value):
 		fog_end = value
-		_update_fog_from_atmosphere()
+		if is_scene_built:
+			fog_material.set_shader_parameter("fog_end", fog_end)
 
 @export_range(-2048.0, 2048.0) var fog_sea_level: float = 0.0:
 	set(value):
@@ -351,7 +358,8 @@ var sun_horizon_fade_width: float = 0.03:
 @export_exp_easing() var fog_mie_depth: float = 0.0001:
 	set(value):
 		fog_mie_depth = value
-		_update_fog_from_atmosphere()
+		if is_scene_built:
+			fog_material.set_shader_parameter("fog_mie_depth", fog_mie_depth)
 
 @export var fog_atm_level_params_offset := Vector3(0.0, 0.0, -1.0):
 	set(value):

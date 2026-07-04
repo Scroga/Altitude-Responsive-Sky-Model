@@ -202,7 +202,8 @@ func _update_sun_temperature() -> void:
 ## Fog
 #####################
 func _update_fog() -> void:
-	sky_dome_settings.update_fog_params(parameters.get_altitude(), parameters.get_visibility())
+	sky_dome_settings.update_altitude(parameters.get_altitude())
+	sky_dome_settings.update_visibility(parameters.get_visibility())
 	
 #####################
 ## Texture Generation Methods
@@ -301,7 +302,6 @@ func _generate_texture_for_altitudes() -> void:
 #####################
 ## Setup
 #####################
-
 func _apply_precomputed_textures_runtime() -> void:
 	if sky_material == null:
 		return
@@ -431,7 +431,8 @@ func _read_player_altitude() -> void:
 	
 	if sky_material:
 		sky_material.set_shader_parameter("altitude", player_altitude)
-		sky_dome_settings.update_fog_params(player_altitude, parameters.get_visibility())
+	if sky_dome_settings:
+		sky_dome_settings.update_altitude(player_altitude)
 
 func _process(_delta: float) -> void:
 	if Engine.is_editor_hint(): 
@@ -635,7 +636,7 @@ func _set(property: StringName, value: Variant) -> bool:
 			if sky_material:
 				sky_material.set_shader_parameter("altitude", parameters.get_altitude())
 			if sky_dome_settings and use_precomputed_altitudes:
-				sky_dome_settings.update_fog_params(parameters.get_altitude(), parameters.get_visibility())
+				sky_dome_settings.update_altitude(parameters.get_altitude())
 				
 			return true
 		"elevation":
