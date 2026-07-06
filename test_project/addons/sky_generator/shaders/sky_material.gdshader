@@ -4,11 +4,9 @@ render_mode use_debanding;
 const int MAX_TEXTURES_COUNT = 32;
 
 group_uniforms textures;
-uniform sampler2D sky_texture;
 uniform sampler2DArray precomputed_textures_array : filter_linear, repeat_disable;
 uniform float precomputed_altitudes[MAX_TEXTURES_COUNT];
 uniform int precomputed_texture_count;
-uniform bool use_precomputed_textures = false;
 
 group_uniforms general;
 uniform bool sky_visible = true;
@@ -81,20 +79,7 @@ void find_altitude_indices(float current_altitude, out int lower_index, out int 
 	}
 }
 
-vec3 sample_single_sky_texture(vec2 uv) {
-	vec2 sample_uv = uv;
-
-	ivec2 tex_size = textureSize(sky_texture, 0);
-
-	float texel_x = 1.0 / float(tex_size.x);
-
-	sample_uv.x = abs(2.0 * uv.x - 1.0);
-	sample_uv.x = clamp(sample_uv.x, texel_x * 0.5, 1.0 - texel_x * 0.5);
-
-	return texture(sky_texture, sample_uv).rgb;
-}
-
-vec3 sample_precomputed_sky_textures(vec2 uv) {
+vec3 sample_sky_texture(vec2 uv) {
 	if (precomputed_texture_count <= 0) {
 		return vec3(0.0);
 	}
@@ -129,17 +114,6 @@ vec3 sample_precomputed_sky_textures(vec2 uv) {
 	return mix(lower_color, upper_color, blend);
 }
 
-vec3 interpolate_sky_texture(vec2 uv) {
-	vec3 sky_color = vec3(1.0, 0.0, 0.0); // red
-	if (use_precomputed_textures) {
-		sky_color = sample_precomputed_sky_textures(uv);
-	}
-	else {
-		sky_color = sample_single_sky_texture(uv);
-	}
-	return sky_color;
-}
-
 vec3 calc_sky_color(vec3 view_dir) {
 	vec3 color = vec3(0.0);
 
@@ -157,7 +131,7 @@ vec3 calc_sky_color(vec3 view_dir) {
 	);
 
 	if (distance(uv, vec2(0.5)) <= 0.5) {
-		color = interpolate_sky_texture(uv);
+		color = sample_sky_texture(uv);
 	}
 	return apply_exposure_gamma(color);
 }

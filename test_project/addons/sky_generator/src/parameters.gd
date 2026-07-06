@@ -3,7 +3,7 @@ extends RefCounted
 
 const DEFAULT_ALBEDO := 0.5
 const DEFAULT_ALTITUDE := 0.0
-const DEFAULT_ELEVATION := 0.0
+const DEFAULT_ELEVATION := 11.0
 const DEFAULT_VISIBILITY := 59.4
 const DEFAULT_RESOLUTION := 512
 

@@ -96,8 +96,6 @@ var altitude_source_path: NodePath
 
 var player_altitude: float = 0.0
 
-@export var use_runtime_altitude: bool = false
-
 @export var altitude_offset: float = 0.0
 
 @export var altitude_scale: float = 1.0
@@ -138,12 +136,6 @@ var azimuth: float = 0.0:
 		if sky_dome_settings:
 			sky_dome_settings.fog_visible = fog_visible
 			
-@export var use_precomputed_altitudes: bool = false:
-	set(value):
-		use_precomputed_altitudes = value
-		if sky_material:
-			sky_material.set_shader_parameter("use_precomputed_textures", use_precomputed_altitudes)
-
 #####################
 ## Sun Light
 #####################
@@ -187,7 +179,7 @@ func _update_sun_temperature() -> void:
 
 	var altitude := parameters.get_altitude()
 
-	if use_runtime_altitude:
+	if altitude_source_path != null:
 		altitude = player_altitude
 
 	var temperature := SkyModelUtils.compute_sun_light_temperature(
@@ -206,44 +198,9 @@ func _update_fog() -> void:
 	sky_dome_settings.update_visibility(parameters.get_visibility())
 	
 #####################
-## Texture Generation Methods
+## Texture Generation
 #####################
-func _generate_single_texture() -> void:
-	if sky_texture_generator == null:
-		push_error("sky_texture_generator is null")
-		return
-
-	if sky_material == null:
-		push_error("sky_material is null")
-		return
-
-	var image: Image = sky_texture_generator.generate_texture(
-		parameters.get_albedo(),
-		parameters.get_altitude(),
-		parameters.get_elevation(),
-		parameters.get_visibility(),
-		parameters.get_resolution()
-	)
-	
-	if image == null:
-		push_error("Sky image generation failed: image is null")
-		return
-	
-	var texture: ImageTexture = ImageTexture.create_from_image(image)
-	
-	if texture == null:
-		push_error("Sky image generation failed: texture is null")
-		return
-		
-	use_precomputed_altitudes = false;
-	sky_material.set_shader_parameter("sky_texture", texture)
-	sky_material.set_shader_parameter("altitude", parameters.get_altitude())
-	sky_material.set_shader_parameter("use_precomputed_textures", use_precomputed_altitudes)
-	
-	_update_sun()
-	_update_fog()
-
-func _generate_texture_for_altitudes() -> void:
+func _generate_textures_for_altitudes() -> void:
 	if sky_texture_generator == null:
 		push_error("sky_texture_generator is null")
 		return
@@ -293,8 +250,6 @@ func _generate_texture_for_altitudes() -> void:
 	sky_material.set_shader_parameter("precomputed_altitude_min", min_altitude)
 	sky_material.set_shader_parameter("precomputed_altitude_max", max_altitude)
 	sky_material.set_shader_parameter("altitude", parameters.get_altitude())
-	use_precomputed_altitudes = true
-	sky_material.set_shader_parameter("use_precomputed_textures", use_precomputed_altitudes)
 
 	_update_sun()
 	_update_fog()
@@ -317,8 +272,6 @@ func _apply_precomputed_textures_runtime() -> void:
 	var min_altitude: float = parameters.get_altitude_min()
 	var max_altitude: float = parameters.get_max_precompute_altitude()
 	
-	use_precomputed_altitudes = true
-	
 	var precomputed_texture_array: Texture2DArray = _build_precomputed_texture_array(precomputed_textures);
 	if (precomputed_texture_array == null): return
 		
@@ -328,9 +281,8 @@ func _apply_precomputed_textures_runtime() -> void:
 	sky_material.set_shader_parameter("precomputed_altitude_min", min_altitude)
 	sky_material.set_shader_parameter("precomputed_altitude_max", max_altitude)
 	sky_material.set_shader_parameter("altitude", parameters.get_altitude())
-	sky_material.set_shader_parameter("use_precomputed_textures", use_precomputed_altitudes)
 
-	if use_runtime_altitude:
+	if altitude_source_path != null:
 		_read_player_altitude()
 	else:
 		sky_material.set_shader_parameter("altitude", parameters.get_altitude())
@@ -406,16 +358,13 @@ func _ready() -> void:
 	if Engine.is_editor_hint():
 		return
 
-	if use_precomputed_altitudes:
-		_apply_precomputed_textures_runtime()
+	_apply_precomputed_textures_runtime()
 		
 	_update_sun()
 	_update_fog()
 
 func _read_player_altitude() -> void:
-	if use_precomputed_altitudes == false:
-		return
-	if use_runtime_altitude == false:
+	if altitude_source_path == null:
 		return
 	
 	if altitude_source == null:
@@ -498,14 +447,6 @@ func _get_property_list() -> Array[Dictionary]:
 		"usage": PROPERTY_USAGE_DEFAULT
 	})
 	
-	properties.append({
-		"name": "generate_sky_texture",
-		"type": TYPE_CALLABLE,
-		"hint": PROPERTY_HINT_TOOL_BUTTON,
-		"hint_string": "Preview Sky Texture",
-		"usage": PROPERTY_USAGE_EDITOR
-	})
-	
 	# Precompute settings
 	properties.append({
 		"name": "Precompute Settings",
@@ -572,7 +513,7 @@ func _property_get_revert(property: StringName) -> Variant:
 		"elevation":
 			return SkyParameters.DEFAULT_ELEVATION
 		"visibility":
-			return (parameters.get_visibility_max() + parameters.get_visibility_min()) / 2
+			return parameters.get_visibility_min()
 		"resolution":
 			return SkyParameters.DEFAULT_RESOLUTION
 		"max_precompute_altitude":
@@ -614,8 +555,6 @@ func _get(property: StringName) -> Variant:
 			return parameters.get_visibility()
 		"resolution":
 			return parameters.get_resolution()
-		"generate_sky_texture":
-			return _generate_single_texture
 		"max_precompute_altitude":
 			return parameters.get_max_precompute_altitude()
 		"precomputed_texture_count":
@@ -623,7 +562,7 @@ func _get(property: StringName) -> Variant:
 		"altitude_density_power":
 			return parameters.get_altitude_density_power()
 		"precompute_sky_textures":
-			return _generate_texture_for_altitudes
+			return _generate_textures_for_altitudes
 	return null
 
 func _set(property: StringName, value: Variant) -> bool:
@@ -635,7 +574,7 @@ func _set(property: StringName, value: Variant) -> bool:
 			parameters.set_altitude(value)
 			if sky_material:
 				sky_material.set_shader_parameter("altitude", parameters.get_altitude())
-			if sky_dome_settings and use_precomputed_altitudes:
+			if sky_dome_settings:
 				sky_dome_settings.update_altitude(parameters.get_altitude())
 				
 			return true
