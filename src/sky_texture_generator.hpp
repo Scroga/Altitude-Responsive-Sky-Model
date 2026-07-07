@@ -32,21 +32,13 @@ private:
 	/// Converts given spectrum to sRGB.
 	SkyModel::Vector3 spectrumToRGB(const Spectrum &spectrum) const;
 	/// Renders a simple fisheye RGB image of the sky.
-	void renderSingle(
+	void render(
 			double albedo,
 			double altitude,
 			double elevation,
 			double visibility,
 			int resolution,
 			std::vector<float> &outResult);
-
-		void renderForAltitudes(
-			double albedo,
-			const std::vector<double>& altitudes,
-			double elevation,
-			double visibility,
-			int resolution,
-			std::vector<std::vector<float>> &outResult);
 
 	SkyModel skyModel;
 	SkyModel::AvailableData available;
@@ -79,13 +71,6 @@ public:
 	Ref<Image> generateSkyTexture(
 			double albedo,
 			double altitude,
-			double elevation,
-			double visibility,
-			int resolution);
-
-	TypedArray<Image> generateSkyTexturesForAltitudes(
-			double albedo,
-			const PackedFloat32Array &altitudesArray,
 			double elevation,
 			double visibility,
 			int resolution);

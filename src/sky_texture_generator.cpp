@@ -51,16 +51,6 @@ void SkyTextureGenerator::_bind_methods() {
 
 	ClassDB::bind_method(
 			D_METHOD(
-					"generate_textures_for_altitudes",
-					"albedo",
-					"altitudes",
-					"elevation",
-					"visibility",
-					"resolution"),
-			&SkyTextureGenerator::generateSkyTexturesForAltitudes);
-
-	ClassDB::bind_method(
-			D_METHOD(
 					"read_dataset",
 					"path",
 					"single_visibility"),
@@ -125,7 +115,7 @@ SkyModel::Vector3 SkyTextureGenerator::rotateAroundZ(const SkyModel::Vector3 &v,
 	return SkyModel::Vector3(c * v.x - s * v.y, s * v.x + c * v.y, v.z);
 }
 
-void SkyTextureGenerator::renderSingle(
+void SkyTextureGenerator::render(
 		double albedo,
 		double altitude,
 		double elevation,
@@ -188,79 +178,6 @@ void SkyTextureGenerator::renderSingle(
 			});
 }
 
-void SkyTextureGenerator::renderForAltitudes(
-		double albedo,
-		const std::vector<double> &altitudes,
-		double elevation,
-		double visibility,
-		int resolution,
-		std::vector<std::vector<float>> &outResult)
-{
-	assert(skyModel.isInitialized());
-	const unsigned int xTextureSize = resolution / 2;
-	const unsigned int yTextureSize = resolution;
-	const int texturesCount = altitudes.size();
-
-	std::vector<SkyModel::FrameInterpolationParameters> frameIterParams(texturesCount);
-	const double azimuth = 0.0;
-	for (int i = 0; i < texturesCount; i++) {
-		// Resize the output buffers and initialize elemetes to 0.0.
-		outResult[i].assign(size_t(xTextureSize) * yTextureSize * 3, 0.0f);
-
-		// We are viewing the sky from 'altitude' meters above the origin.
-		const SkyModel::Vector3 viewPoint = SkyModel::Vector3(0.0, 0.0, altitudes[i]);
-
-		// Generate frame parameters for each altitude.
-		frameIterParams[i] = skyModel.computeFrameInterpolationParameters(
-				viewPoint,
-				degreesToRadians(elevation),
-				degreesToRadians(azimuth),
-				visibility,
-				albedo);
-	}
-
-	std::vector<int> xs;
-	const int rowsCount = xTextureSize * texturesCount;
-	xs.resize(rowsCount);
-	for (int x = 0; x < rowsCount; x++) {
-		xs[x] = x;
-	}
-
-	std::for_each(std::execution::par, xs.begin(), xs.end(),
-			[this, &frameIterParams, &xTextureSize, &yTextureSize, &outResult](auto &&globalX) {
-				int textureIndex = globalX / xTextureSize;
-				const int x = (globalX % xTextureSize);
-
-				for (int y = 0; y < yTextureSize; y++) {
-					// For each pixel of the rendered image get the corresponding direction in fisheye projection.
-					SkyModel::Vector3 viewDir = this->pixelToDirection(x + xTextureSize, y, yTextureSize);
-
-					viewDir = this->rotateAroundZ(viewDir, degreesToRadians(90.0));
-
-					// If the pixel lies outside the upper hemisphere, the direction will be zero. Such a pixel is kept black.
-					if (viewDir.isZero()) {
-						continue;
-					}
-
-					SkyModel::PixelInterpolationParameters pixelIterParams = this->skyModel.computePixelInterpolationParameters(viewDir);
-
-					Spectrum spectrum;
-					for (int wl = 0; wl < SPECTRUM_CHANNELS; wl++) {
-						spectrum[wl] = this->skyModel.skyRadiance(pixelIterParams, frameIterParams[textureIndex], SPECTRUM_WAVELENGTHS[wl]);
-					}
-
-					// Convert the spectral quantity to sRGB and store it at 0 in the result buffer.
-					const SkyModel::Vector3 rgb = this->spectrumToRGB(spectrum);
-
-					const size_t index = (size_t(y) * xTextureSize + x) * 3;
-
-					outResult[textureIndex][index + 0] = float(rgb.x);
-					outResult[textureIndex][index + 1] = float(rgb.y);
-					outResult[textureIndex][index + 2] = float(rgb.z);
-				}
-			});
-}
-
 void SkyTextureGenerator::readDataset(const String &path, double singleVisibility) {
 	try {
 		skyModel.initialize(path.utf8().get_data(), singleVisibility);
@@ -300,7 +217,7 @@ Ref<Image> SkyTextureGenerator::generateSkyTexture(
 
 	try {
 		//Render sky image according to the given configuration.
-		renderSingle(
+		render(
 				clampedAlbedo,
 				clampedAltitude,
 				clampedElevation,
@@ -328,79 +245,4 @@ Ref<Image> SkyTextureGenerator::generateSkyTexture(
 		return Ref<Image>();
 	}
 	return image;
-}
-
-TypedArray<Image> SkyTextureGenerator::generateSkyTexturesForAltitudes(
-		double albedo,
-		const PackedFloat32Array &altitudesArray,
-		double elevation,
-		double visibility,
-		int resolution) {
-	if (!skyModel.isInitialized()) {
-		ERR_PRINT("Sky model is not initialized. Call read_dataset() first.");
-		return TypedArray<Image>();
-	}
-	const int texturesCount = altitudesArray.size();
-
-	if (texturesCount <= 0) {
-		ERR_PRINT("texturesCount must be greater than 0.");
-		return TypedArray<Image>();
-	}
-
-	if (resolution % 2 != 0)
-		resolution++;
-
-	const double clampedAlbedo = std::clamp(albedo, available.albedoMin, available.albedoMax);
-	const double clampedElevation = std::clamp(elevation, available.elevationMin, available.elevationMax);
-	const double clampedVisibility = std::clamp(visibility, available.visibilityMin, available.visibilityMax);
-	const int clampedResolution = std::clamp(resolution, resolutionMin, resolutionMax);
-
-	const unsigned int xTextureSize = clampedResolution / 2;
-	const unsigned int yTextureSize = clampedResolution;
-
-	std::vector<std::vector<float>> results(texturesCount);
-	std::vector<double> altitudes(texturesCount);
-	TypedArray<Image> images;
-
-	try {
-		// Fill altitudes vector.
-		for (int i = 0; i < texturesCount; i++) {
-			altitudes[i] = std::clamp(
-					static_cast<double>(altitudesArray[i]),
-					available.altitudeMin,
-					available.altitudeMax);
-		}
-
-		//Render sky image according to the given configuration.
-		renderForAltitudes(
-				clampedAlbedo,
-				altitudes,
-				clampedElevation,
-				clampedVisibility,
-				clampedResolution,
-				results);
-
-		if (results.empty()) {
-			ERR_PRINT("Render result is empty.");
-			return TypedArray<Image>();
-		}
-
-		// Save the result buffer into an godot::Image array.
-		for (const auto &result : results) {
-			PackedByteArray bytes;
-			bytes.resize(xTextureSize * yTextureSize * 3 * sizeof(float));
-			memcpy(bytes.ptrw(), result.data(), bytes.size());
-
-			Ref<Image> image;
-			image.instantiate();
-			image->set_data(xTextureSize, yTextureSize, false, Image::FORMAT_RGBF, bytes);
-
-			images.push_back(image);
-		}
-		print_line("Precomputation complete.");
-	} catch (const std::exception &e) {
-		ERR_PRINT(String("Error: ") + e.what());
-		return TypedArray<Image>();
-	}
-	return images;
 }
