@@ -115,6 +115,22 @@ const SkyModel::Vector3 SPECTRAL_RESPONSE[] = {
 constexpr double SPECTRAL_RESPONSE_START = 360.0;
 constexpr double SPECTRAL_RESPONSE_STEP = 5.0;
 
+constexpr double SUN_CCT_MIN = 1900.0;
+constexpr double SUN_CCT_MAX = 6500.0;
+constexpr double SUN_CCT_CLAMP_MIN = 1500.0;
+constexpr double SUN_CCT_CLAMP_MAX = 6500.0;
+
+constexpr double MAX_SUN_ELEVATION_DEG = 90.0;
+constexpr double SUN_CCT_ELEVATION_EXPONENT = 0.35;
+
+constexpr double VISIBILITY_HAZE_START_KM = 80.0;
+constexpr double VISIBILITY_HAZE_RANGE_KM = 60.0;
+constexpr double VISIBILITY_HAZE_CCT_REDUCTION = 700.0;
+
+constexpr double METERS_PER_KILOMETER = 1000.0;
+constexpr double MAX_ALTITUDE_KM = 15.0;
+constexpr double ALTITUDE_CCT_INCREASE_PER_KM = 40.0;
+
 inline double degreesToRadians(const double degrees) {
 	return degrees * M_PI / 180.0;
 }

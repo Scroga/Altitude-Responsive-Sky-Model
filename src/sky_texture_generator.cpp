@@ -238,8 +238,6 @@ Ref<Image> SkyTextureGenerator::generateSkyTexture(
 		image.instantiate();
 
 		image->set_data(xTextureSize, yTextureSize, false, Image::FORMAT_RGBF, bytes);
-
-		print_line("Done.");
 	} catch (const std::exception &e) {
 		ERR_PRINT(String("Error: ") + e.what());
 		return Ref<Image>();

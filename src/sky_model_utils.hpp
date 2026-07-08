@@ -30,8 +30,11 @@ protected:
 				&SkyModelUtils::computeSunLightTemperature);
 	}
 
-private:
 public:
+	/// Generates evenly spaced altitude values between minAltitude and maxAltitude.
+	///
+	/// Returns an empty array if count is less than or equal to 0. If count is 1,
+	/// the returned array contains only minAltitude.
 	static PackedFloat32Array generateLinearAltitudes(
 			double minAltitude,
 			double maxAltitude,
@@ -63,6 +66,11 @@ public:
 		return altitudes;
 	}
 
+	/// Generates non-linearly spaced altitude values between minAltitude and maxAltitude.
+	///
+	/// The exponent controls the distribution of samples. Values greater than 1.0 place
+	/// more samples near minAltitude. Returns an empty array if count is less than or
+	/// equal to 0. If count is 1, the returned array contains only minAltitude.
 	static PackedFloat32Array generateNonLinearAltitudes(
 			double minAltitude,
 			double maxAltitude,
@@ -103,101 +111,46 @@ public:
 		return altitudes;
 	}
 
+	/// Estimates direct sunlight color temperature from sun elevation.
+	///
+	/// Returns a warm value near the horizon and a neutral daylight value when the sun is high.
+	/// Visibility and altitude slightly affect the result, but this is only an artistic approximation
+	/// intended for Godot's light_temperature property.
 	static double computeSunLightTemperature(double elevation, double altitude, double visibility) {
 		if (elevation <= 0.0) {
-			return 1900.0;
-		}
-		const double elevationRad = degreesToRadians(elevation);
-
-		const double zenithDeg = 90.0 - elevation;
-		const double airMass = 1.0 / (std::cos(degreesToRadians(zenithDeg)) + 0.50572 * std::pow(96.07995 - zenithDeg, -1.6364));
-
-		// Atmosphere scale heights.
-		// Rayleigh molecules extend higher; aerosols are concentrated near ground.
-		const double altitudeKm = altitude / 1000.0;
-		const double rayleighHeightScaleKm = 8.0;
-		const double aerosolHeightScaleKm = 1.2;
-
-		const double rayleighAltitudeFactor = std::exp(-altitudeKm / rayleighHeightScaleKm);
-		const double aerosolAltitudeFactor = std::exp(-altitudeKm / aerosolHeightScaleKm);
-
-		// Visibility is meteorological range in km.
-		// Koschmieder relation: beta_extinction ~= 3.912 / visibility.
-		// This gives horizontal extinction at 550 nm.
-		const double betaAerosol550 = 3.912 / visibility;
-
-		// Convert horizontal extinction to approximate vertical aerosol optical depth.
-		const double aerosolTau550 = betaAerosol550 * aerosolHeightScaleKm * aerosolAltitudeFactor;
-
-		// Angstrom exponent.
-		// Higher = smaller particles, stronger blue attenuation.
-		// This is a reasonable clear/hazy atmosphere approximation.
-		const double angstromAlpha = 1.3;
-
-		double X = 0.0;
-		double Y = 0.0;
-		double Z = 0.0;
-
-		for (int wl = 0; wl < SPECTRUM_CHANNELS; wl++) {
-			const double wavelengthNm = SPECTRUM_WAVELENGTHS[wl];
-			const double wavelengthUm = wavelengthNm / 1000.0;
-
-			// Relative extraterrestrial solar spectrum approximated as 5778 K blackbody.
-			// Constants are not needed because only chromaticity matters.
-			const double c2 = 1.438776877e-2; // m*K
-			const double wavelengthM = wavelengthNm * 1.0e-9;
-			const double solarTemperature = 5778.0;
-
-			const double solar = 1.0 / (std::pow(wavelengthM, 5.0) * (std::exp(c2 / (wavelengthM * solarTemperature)) - 1.0));
-
-			// Rayleigh vertical optical depth at sea level.
-			// Common compact approximation around visible wavelengths.
-			const double rayleighTau = 0.008735 * std::pow(wavelengthUm, -4.08) * rayleighAltitudeFactor;
-
-			// Aerosol optical depth from visibility.
-			const double aerosolTau = aerosolTau550 * std::pow(wavelengthUm / 0.55, -angstromAlpha);
-
-			const double transmittance = std::exp(-airMass * (rayleighTau + aerosolTau));
-
-			const double spectrum = solar * transmittance;
-
-			const int responseIdx = int(
-					(SPECTRUM_WAVELENGTHS[wl] - SPECTRAL_RESPONSE_START) /
-					SPECTRAL_RESPONSE_STEP);
-
-			if (0 <= responseIdx && responseIdx < std::size(SPECTRAL_RESPONSE)) {
-				X += SPECTRAL_RESPONSE[responseIdx].x * spectrum;
-				Y += SPECTRAL_RESPONSE[responseIdx].y * spectrum;
-				Z += SPECTRAL_RESPONSE[responseIdx].z * spectrum;
-			}
+			return SUN_CCT_MIN;
 		}
 
-		X *= SPECTRUM_STEP;
-		Y *= SPECTRUM_STEP;
-		Z *= SPECTRUM_STEP;
+		// Normalize sun elevation from horizon to zenith.
+		const double elevationFactor = std::clamp(
+			elevation / MAX_SUN_ELEVATION_DEG,
+			0.0,
+			1.0);
 
-		const double sum = X + Y + Z;
-		if (sum <= 0.0) {
-			return 1900.0;
+		// Low sun = warm orange, high sun = daylight white.
+		double cct = SUN_CCT_MIN +
+				std::pow(elevationFactor, SUN_CCT_ELEVATION_EXPONENT) *
+						(SUN_CCT_MAX - SUN_CCT_MIN);
+
+		// Lower visibility means more haze, which makes direct sunlight warmer.
+		if (visibility > 0.0) {
+			const double hazeFactor = std::clamp(
+					(VISIBILITY_HAZE_START_KM - visibility) / VISIBILITY_HAZE_RANGE_KM,
+					0.0,
+					1.0);
+
+			cct -= hazeFactor * VISIBILITY_HAZE_CCT_REDUCTION;
 		}
 
-		const double x = X / sum;
-		const double y = Y / sum;
+		// Higher altitude means less atmosphere, so direct sunlight becomes slightly less warm.
+		const double altitudeKm = std::clamp(
+				altitude / METERS_PER_KILOMETER,
+				0.0,
+				MAX_ALTITUDE_KM);
 
-		// McCamy CCT approximation from xy chromaticity.
-		// Good enough for driving Godot light_temperature.
-		const double n = (x - 0.3320) / (0.1858 - y);
-		double cct =
-				449.0 * n * n * n +
-				3525.0 * n * n +
-				6823.3 * n +
-				5520.33;
+		cct += altitudeKm * ALTITUDE_CCT_INCREASE_PER_KM;
 
-		// Godot light temperature is useful in a practical range.
-		// Direct sunlight usually stays roughly inside this range.
-		cct = std::clamp(cct, 1500.0, 6500.0);
-
-		return cct;
+		return std::clamp(cct, SUN_CCT_CLAMP_MIN, SUN_CCT_CLAMP_MAX);
 	}
 };
 

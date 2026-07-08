@@ -49,6 +49,7 @@ private:
 public:
 	SkyTextureGenerator();
 
+	/// Dataset and texture generation limits exposed as read-only properties.
 	double getAlbedoMin() const { return available.albedoMin; }
 	double getAlbedoMax() const { return available.albedoMax; }
 
@@ -64,10 +65,19 @@ public:
 	int getResolutionMin() const { return resolutionMin; }
 	int getResolutionMax() const { return resolutionMax; }
 
+	/// Returns true if the sky model dataset has been loaded successfully.
 	bool isInitialized() const { return skyModel.isInitialized(); }
 
+	/// Loads the sky model dataset from the given file path.
+	///
+	/// If singleVisibility is positive, only the dataset portion needed for that
+	/// visibility is loaded. Otherwise, the full dataset is loaded.
 	void readDataset(const String &path, double singleVisibility);
 
+	/// Generates a sky texture for the given atmosphere settings.
+	///
+	/// Values outside the available dataset or texture resolution range are clamped.
+	/// Returns an empty Image reference if the model is not initialized or rendering fails.
 	Ref<Image> generateSkyTexture(
 			double albedo,
 			double altitude,

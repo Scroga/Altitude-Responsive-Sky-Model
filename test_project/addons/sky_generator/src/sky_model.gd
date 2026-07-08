@@ -253,6 +253,8 @@ func _generate_textures_for_altitudes() -> void:
 
 	_update_sun()
 	_update_fog()
+	
+	print("%d textures were precomputed." % texture_count)
 
 #####################
 ## Setup

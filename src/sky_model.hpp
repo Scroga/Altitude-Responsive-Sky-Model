@@ -12,19 +12,19 @@
 /// especially in accuracy of sunset scenarios. Based on reconstruction of radiance from a small dataset
 /// fitted to a large set of images obtained by brute force atmosphere simulation.
 ///
-/// Provides evaluation of spectral sky radiance, sun radiance, transmittance and polarisation for observer at
-/// a specific altitude above ground. The range of configurations depends on supplied dataset. The full
-/// version models atmosphere of visibility (meteorological range) from 20 km to 131.8 km for sun elevations
-/// from -4.2 degrees to 90 degrees, observer altitudes from 0 km to 15 km and ground albedo from 0 to 1, and
-/// provides results for wavelengths from 280 nm to 2480 nm.
+/// Provides evaluation of spectral sky radiance for observer at a specific altitude above ground.
+/// The range of configurations depends on supplied dataset. The full version models atmosphere of visibility
+/// (meteorological range) from 20 km to 131.8 km for sun elevations from -4.2 degrees to 90 degrees, observer
+/// altitudes from 0 km to 15 km and ground albedo from 0 to 1, and provides results for wavelengths from 280 nm to 2480 nm.
 ///
 /// Usage:
-/// 1. Create PragueSkyModel object and call its initialize method with a path to the dataset file.
-/// 2. The model is parametrized by several values that are gathered in PragueSkyModel::Parameters structure.
-/// You can either fill this structure manually (in that case see its description) or just call
-/// computeParameters, which will compute it for you based on a few basic parameters.
-/// 3. Use the Parameters structure when calling skyRadiance, sunRadiance, transmittance, or polarisation
-/// methods to obtain the respective quantities.
+/// 1. Create a SkyModel object and call initialize() with a path to the dataset file.
+/// 2. For each frame or sky configuration, call computeFrameInterpolationParameters() with the viewpoint,
+///    sun elevation and azimuth, visibility, and ground albedo.
+/// 3. For each view direction, call computePixelInterpolationParameters() to compute angular interpolation
+///    parameters.
+/// 4. Use the returned frame and pixel interpolation parameters when calling skyRadiance() to obtain sky
+///    radiance for the requested wavelength.
 ///
 /// Throws:
 /// - DatasetNotFoundException: if the specified dataset file could not be found
@@ -230,6 +230,7 @@ private:
 		InterpolationParameter distance;
 	};
 
+	/// Cached per-frame parameters shared by all sky-radiance pixel queries.
 	struct FrameParameters {
 		/// Sun elevation at view point in radians, supported values in range [-0.073, PI/2] (for full
 		/// dataset). For view points above ground differs from the ground level sun elevation expected by the
@@ -325,6 +326,7 @@ private:
 
 
 public:
+	/// Parameters derived from a view direction and used for per-pixel angular interpolation.
 	struct PixelInterpolationParameters {
 		double gamma;
 		double theta;
@@ -333,6 +335,7 @@ public:
 		AngleParameters angle;
 	};
 
+	/// Parameters derived from frame settings and used for interpolation between dataset configurations.
 	struct FrameInterpolationParameters {
 		InterpolationParameter elevation;
 		InterpolationParameter altitude;
@@ -365,18 +368,23 @@ public:
 	/// Throws NotInitializedException if called without initializing the model first.
 	AvailableData getAvailableData() const;
 
-	/// Computes all the parameters in the Parameters structure necessary for querying the model.
+	/// Computes per-pixel angular interpolation parameters from the given view direction.
 	///
-	/// Expects view point and direction, sun elevation and azimuth at origin, ground level visibility and
-	/// ground albedo. Assumes origin at [0,0,0] with Z axis pointing up. Thus view point [0, 0, 100] defines
-	/// observer altitude 100 m. Range of available values depends on the used dataset. The full version
-	/// supports altitude from [0, 15000] m, elevation from [-0.073, PI/2] rad, azimuth from [0, PI] rad, visibility
-	/// from [20, 131.8] km, and albedo from [0, 1]. Values outside range of the used dataset are clamped to the
-	/// nearest supported value.
-
+	/// Expects a normalized or non-zero view direction in the same coordinate system as the model,
+	/// with the Z axis pointing up. The returned parameters depend on the cached frame parameters
+	/// computed by computeFrameInterpolationParameters().
 	PixelInterpolationParameters computePixelInterpolationParameters(
 			const Vector3 &viewDirection) const;
 
+	/// Computes per-frame interpolation parameters shared by all pixel queries.
+	///
+	/// Expects view point, sun elevation and sun azimuth at the origin, ground-level visibility,
+	/// and ground albedo. Assumes the origin is [0, 0, 0] with the Z axis pointing up. Thus,
+	/// view point [0, 0, 100] defines an observer altitude of 100 m. Range of available values
+	/// depends on the used dataset. The full version supports altitude from [0, 15000] m,
+	/// elevation from [-0.073, PI/2] rad, azimuth from [0, PI] rad, visibility from
+	/// [20, 131.8] km, and albedo from [0, 1]. Values outside the dataset range are clamped
+	/// to the nearest supported value.
 	FrameInterpolationParameters computeFrameInterpolationParameters(
 			const Vector3 &viewpoint,
 			const double groundLevelSolarElevationAtOrigin,
@@ -389,18 +397,10 @@ public:
 	///
 	/// Throws NotInitializedException if called without initializing the model first.
 	//double skyRadiance(const Parameters &params, const double wavelength) const;
-
 	double skyRadiance(
 			const PixelInterpolationParameters &pixelIterParams,
 			const FrameInterpolationParameters &frameIterParams,
 			const double wavelength) const;
-
-	/// Computes sun radiance only (without radiance inscattered from the sky) for given parameters and
-	/// wavelength (full dataset supports wavelengths from 280 nm to 2480 nm).
-	///
-	/// Checks whether the parameters correspond to view direction hitting the sun and returns 0 if not.
-	///
-	/// Throws NotInitializedException if called without initializing the model first.
 
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Private methods
