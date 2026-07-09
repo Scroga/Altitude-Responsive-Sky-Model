@@ -164,11 +164,17 @@ func _update_sun_rotation() -> void:
 		cos(elevation_rad) * cos(azimuth_rad)
 	).normalized()
 
-# DirectionalLight3D emits along local -Z.
+	# DirectionalLight3D emits along local -Z, so it must look opposite to sun_direction.
+	var look_direction := -sun_direction
+
+	var up := Vector3.UP
+	if abs(look_direction.dot(up)) > 0.999:
+		up = Vector3.FORWARD
+		
 	if sun.is_inside_tree():
-		sun.look_at(sun.global_position - sun_direction, Vector3.UP)
+		sun.look_at(sun.global_position - sun_direction, up)
 	else:
-		sun.look_at_from_position(Vector3.ZERO, -sun_direction, Vector3.UP)
+		sun.look_at_from_position(Vector3.ZERO, -sun_direction, up)
 
 func _update_sun_temperature() -> void:
 	if sun == null:
