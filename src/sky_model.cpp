@@ -293,10 +293,6 @@ SkyModel::Vector3 normalize(const SkyModel::Vector3 &vector) {
 // Helper functions
 /////////////////////////////////////////////////////////////////////////////////////
 
-double lerp(const double from, const double to, const double factor) {
-	return (1.0 - factor) * from + factor * to;
-}
-
 double nonlerp(const double a, const double b, const double w, const double p) {
 	const double c1 = pow(a, p);
 	const double c2 = pow(b, p);

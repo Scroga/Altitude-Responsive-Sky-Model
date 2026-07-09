@@ -179,6 +179,24 @@ def write_info_plist(target, source, env, plist_content):
     with open(target[0].abspath, 'w') as f:
         f.write(plist_content)
 
+
+# This extension uses C++ exceptions in SkyModel.
+# godot-cpp/GDExtension templates may disable them by default.
+if env.get("platform") == "windows" and env.get("use_mingw", False):
+    env.Append(CCFLAGS=["-fexceptions"])
+    env.Append(LINKFLAGS=["-fexceptions"])
+elif env.get("platform") == "windows":
+    # MSVC
+    env.Append(CXXFLAGS=["/EHsc"])
+elif env.get("platform") == "web":
+    # Emscripten; exceptions increase binary size.
+    env.Append(CCFLAGS=["-fexceptions"])
+    env.Append(LINKFLAGS=["-fexceptions", "-sDISABLE_EXCEPTION_CATCHING=0"])
+else:
+    # GCC / Clang
+    env.Append(CCFLAGS=["-fexceptions"])
+    env.Append(LINKFLAGS=["-fexceptions"])
+
 # Build the shared library and create frameworks
 library = None
 install_source = None

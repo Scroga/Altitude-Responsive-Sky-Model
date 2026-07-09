@@ -1,6 +1,7 @@
 #ifndef SKY_MODEL_HPP
 #define SKY_MODEL_HPP
 
+#include <array>
 #include <cmath>
 #include <exception>
 #include <optional>
@@ -433,6 +434,15 @@ private:
 			const int visibility,
 			const int albedo,
 			const int wavelength) const;
+
+	/////////////////////////////////////////////////////////////////////////////////////
+	// Helper functions
+	/////////////////////////////////////////////////////////////////////////////////////
+
+	/// Linear interpolation helper used by interpolate method.
+	static constexpr double lerp(double from, double to, double factor) {
+		return from + (to - from) * factor;
+	}
 
 	/// Recursive function controlling interpolation of reconstructed radiance between two neighboring visibility,
 	/// albedo, altitude and elevation values.
