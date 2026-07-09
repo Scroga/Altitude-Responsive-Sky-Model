@@ -189,13 +189,6 @@ if env.get("platform") == "windows" and env.get("use_mingw", False):
 elif env.get("platform") == "windows":
     # MSVC
     env.Append(CXXFLAGS=["/EHsc"])
-
-elif env.get("platform") == "web":
-    # This project uses C++ exceptions, so do not disable them.
-    env.Append(CCFLAGS=["-fexceptions"])
-    env.Append(CXXFLAGS=["-fexceptions"])
-    env.Append(LINKFLAGS=["-fexceptions"])
-
 else:
     # GCC / Clang
     env.Append(CCFLAGS=["-fexceptions"])
