@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <array>
 #include <cstring>
-#include <execution>
 #include <limits>
 #include <string>
 

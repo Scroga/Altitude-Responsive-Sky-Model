@@ -191,9 +191,10 @@ elif env.get("platform") == "windows":
     env.Append(CXXFLAGS=["/EHsc"])
 
 elif env.get("platform") == "web":
-    # Emscripten/WebAssembly: disable C++ exceptions.
-    env.Append(CCFLAGS=["-fno-exceptions"])
-    env.Append(CXXFLAGS=["-fno-exceptions"])
+    # This project uses C++ exceptions, so do not disable them.
+    env.Append(CCFLAGS=["-fexceptions"])
+    env.Append(CXXFLAGS=["-fexceptions"])
+    env.Append(LINKFLAGS=["-fexceptions"])
 
 else:
     # GCC / Clang
