@@ -11,46 +11,7 @@
 #include <limits>
 #include <string>
 
-
-template <typename Index, typename Func>
-inline void parallel_for(Index begin, Index end, Func fn) {
-	const Index count = end - begin;
-	if (count <= 0)
-		return;
-
-#if defined(__EMSCRIPTEN__) && !defined(__EMSCRIPTEN_PTHREADS__)
-	// Web build without pthread support: run serially.
-	for (Index i = begin; i < end; ++i) {
-		fn(i);
-	}
-#else
-	unsigned int workers = std::thread::hardware_concurrency();
-	if (workers == 0)
-		workers = 4;
-
-	// Avoid too many threads for small workloads.
-	workers = std::min<unsigned int>(workers, static_cast<unsigned int>(count));
-
-	std::atomic<Index> next{ begin };
-	std::vector<std::thread> threads;
-	threads.reserve(workers);
-
-	for (unsigned int t = 0; t < workers; ++t) {
-		threads.emplace_back([&]() {
-			while (true) {
-				Index i = next.fetch_add(1, std::memory_order_relaxed);
-				if (i >= end)
-					break;
-				fn(i);
-			}
-		});
-	}
-
-	for (auto &thread : threads) {
-		thread.join();
-	}
-#endif
-}
+#include "parallel_for.hpp"
 
 #define BIND_READ_ONLY_PROPERTY(m_method, m_property, m_type)           \
 	ClassDB::bind_method(D_METHOD("get_" #m_property), &m_method);      \
@@ -181,15 +142,9 @@ void SkyTextureGenerator::render(
 			visibility,
 			albedo);
 
-	std::vector<int> xs;
-	xs.resize(xTextureSize);
-	for (int x = 0; x < xTextureSize; x++) {
-		xs[x] = x;
-	}
 
-	//std::for_each(std::execution::par, xs.begin(), xs.end(), [&](auto &&x) {
-	parallel_for<std::size_t>(0, xTextureSize, [&](std::size_t i) {
-		auto &x = xs[i];
+	//parallel_for<std::size_t>(0, xTextureSize, [&](std::size_t x) {
+	parallel_for_chunks<std::size_t>(0, xTextureSize, 8, [&](std::size_t x) {
 		for (int y = 0; y < yTextureSize; y++) {
 			// For each pixel of the rendered image get the corresponding direction in fisheye projection.
 			SkyModel::Vector3 viewDir = this->pixelToDirection(x + xTextureSize, y, yTextureSize);
