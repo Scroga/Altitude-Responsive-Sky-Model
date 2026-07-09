@@ -181,17 +181,20 @@ def write_info_plist(target, source, env, plist_content):
 
 
 # This extension uses C++ exceptions in SkyModel.
-# godot-cpp/GDExtension templates may disable them by default.
+# But web builds should avoid Emscripten exception mode conflicts.
 if env.get("platform") == "windows" and env.get("use_mingw", False):
     env.Append(CCFLAGS=["-fexceptions"])
     env.Append(LINKFLAGS=["-fexceptions"])
+
 elif env.get("platform") == "windows":
     # MSVC
     env.Append(CXXFLAGS=["/EHsc"])
+
 elif env.get("platform") == "web":
-    # Emscripten; exceptions increase binary size.
-    env.Append(CCFLAGS=["-fexceptions"])
-    env.Append(LINKFLAGS=["-fexceptions", "-sDISABLE_EXCEPTION_CATCHING=0"])
+    # Emscripten/WebAssembly: disable C++ exceptions.
+    env.Append(CCFLAGS=["-fno-exceptions"])
+    env.Append(CXXFLAGS=["-fno-exceptions"])
+
 else:
     # GCC / Clang
     env.Append(CCFLAGS=["-fexceptions"])

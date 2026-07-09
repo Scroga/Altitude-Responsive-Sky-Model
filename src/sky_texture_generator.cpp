@@ -11,7 +11,7 @@
 #include <limits>
 #include <string>
 
-#include "parallel_for.hpp"
+#include "custom_parallel_for.hpp"
 
 #define BIND_READ_ONLY_PROPERTY(m_method, m_property, m_type)           \
 	ClassDB::bind_method(D_METHOD("get_" #m_property), &m_method);      \
@@ -142,9 +142,10 @@ void SkyTextureGenerator::render(
 			visibility,
 			albedo);
 
+	const std::size_t chunkSize = 8;
 
 	//parallel_for<std::size_t>(0, xTextureSize, [&](std::size_t x) {
-	parallel_for_chunks<std::size_t>(0, xTextureSize, 8, [&](std::size_t x) {
+	parallel_for_chunks<std::size_t>(0, xTextureSize, chunkSize, [&](std::size_t x) {
 		for (int y = 0; y < yTextureSize; y++) {
 			// For each pixel of the rendered image get the corresponding direction in fisheye projection.
 			SkyModel::Vector3 viewDir = this->pixelToDirection(x + xTextureSize, y, yTextureSize);

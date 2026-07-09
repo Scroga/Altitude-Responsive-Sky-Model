@@ -7,6 +7,11 @@
 #include <thread>
 #include <vector>
 
+/// Executes the given function for each index in the range [begin, end).
+///
+/// The work is distributed across several worker threads when native threads are
+/// available. In web builds without pthread support, the function runs serially.
+/// Returns immediately if the range is empty.
 template <typename Index, typename Func>
 void parallel_for(Index begin, Index end, Func fn) {
 	const Index count = end - begin;
@@ -47,6 +52,13 @@ void parallel_for(Index begin, Index end, Func fn) {
 #endif
 }
 
+
+/// Executes the given function for each index in the range [begin, end), grouped
+/// into chunks of the requested grain size.
+///
+/// The work is distributed by chunks to reduce synchronization overhead compared
+/// to assigning one index at a time. In web builds without pthread support, the
+/// function runs serially. Returns immediately if the range is empty.
 template <typename Index, typename Func>
 void parallel_for_chunks(Index begin, Index end, Index grainSize, Func fn) {
 	const Index count = end - begin;
