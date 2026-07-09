@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SkyTextureGenerator" inherits="Node3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+				<brief_description>
+								Native extension class for loading a Prague Sky Model dataset and generating floating-point RGB sky textures.
+				</brief_description>
+				<description>
+								[SkyTextureGenerator] is a Godot native extension class used to load a sky model dataset and generate RGB floating-point sky textures from atmospheric parameters.
+								The class wraps the C++ sky model implementation and exposes it to GDScript. Before textures can be generated, a dataset must be loaded with [method read_dataset]. After the dataset is loaded, [method generate_texture] evaluates the sky model for the requested ground albedo, observer altitude, solar elevation, visibility, and texture resolution.
+								The generated image represents an upward-facing half fisheye view of the sky. The sky radiance is evaluated spectrally and converted to RGB before being stored in a Godot [Image]. Parameter values outside the loaded dataset range are clamped automatically. The available ranges can be queried through the read-only properties of this class.
+								This class is intended mainly for precomputing or updating sky textures that can later be used by the sky shader, where the output half fisheye view of the sky can be reconstructed.
+				</description>
+				<tutorials>
+				</tutorials>
+				<methods>
+								<method name="generate_texture">
+												<return type="Image" />
+												<param index="0" name="albedo" type="float" />
+												<param index="1" name="altitude" type="float" />
+												<param index="2" name="elevation" type="float" />
+												<param index="3" name="visibility" type="float" />
+												<param index="4" name="resolution" type="int" />
+												<description>
+																Generates a sky texture for the given atmospheric settings.
+																[param albedo] is the ground albedo used by the sky model. It is clamped to the range available in the loaded dataset.
+																[param altitude] is the observer altitude above the ground, in meters. It is clamped to the altitude range available in the loaded dataset.
+																[param elevation] is the solar elevation angle, in degrees. Negative values can be used for post-sunset sky conditions if they are supported by the loaded dataset.
+																[param visibility] is the horizontal visibility, or meteorological range, in kilometers. Lower values produce hazier atmospheres.
+																[param resolution] controls the output texture size. The value is clamped to the supported resolution range.
+																Returns an [Image] containing RGB floating-point sky radiance data. Returns an empty [Image] reference if the sky model has not been initialized or if texture generation fails.
+												</description>
+								</method>
+								<method name="read_dataset">
+												<return type="void" />
+												<param index="0" name="path" type="String" />
+												<param index="1" name="single_visibility" type="float" />
+												<description>
+																Loads the sky model dataset from the file at [param path].
+																The dataset contains the fitted sky model data needed to evaluate sky radiance for different atmospheric configurations. This method must be called successfully before [method generate_texture] can produce a valid texture.
+																If [param single_visibility] is positive, only the dataset portion needed for that visibility value is loaded. This can reduce memory usage when visibility is fixed. If [param single_visibility] is zero or negative, the full dataset is loaded.
+												</description>
+								</method>
+				</methods>
+				<members>
+								<member name="albedo_max" type="float" setter="" getter="get_albedo_max" default="1.0">
+												Maximum ground albedo value available in the loaded dataset.
+								</member>
+								<member name="albedo_min" type="float" setter="" getter="get_albedo_min" default="0.0">
+												Minimum ground albedo value available in the loaded dataset.
+								</member>
+								<member name="altitude_max" type="float" setter="" getter="get_altitude_max" default="15000.0">
+												Maximum supported observer altitude, in meters, available in the loaded dataset.
+								</member>
+								<member name="altitude_min" type="float" setter="" getter="get_altitude_min" default="0.0">
+												Minimum supported observer altitude, in meters, available in the loaded dataset.
+								</member>
+								<member name="elevation_max" type="float" setter="" getter="get_elevation_max" default="90.0">
+												Maximum supported solar elevation angle, in degrees, available in the loaded dataset.
+								</member>
+								<member name="elevation_min" type="float" setter="" getter="get_elevation_min" default="-4.2">
+												Minimum supported solar elevation angle, in degrees, available in the loaded dataset. Negative values represent post-sunset configurations.
+								</member>
+								<member name="is_initialized" type="bool" setter="" getter="get_is_initialized" default="false">
+												If [code]true[/code], the sky model dataset has been loaded successfully and sky textures can be generated.
+								</member>
+								<member name="resolution_max" type="int" setter="" getter="get_resolution_max" default="4096">
+												Maximum texture resolution accepted by [method generate_texture].
+								</member>
+								<member name="resolution_min" type="int" setter="" getter="get_resolution_min" default="128">
+												Minimum texture resolution accepted by [method generate_texture].
+								</member>
+								<member name="visibility_max" type="float" setter="" getter="get_visibility_max" default="131.8">
+												Maximum supported horizontal visibility, in kilometers, available in the loaded dataset.
+								</member>
+								<member name="visibility_min" type="float" setter="" getter="get_visibility_min" default="20.0">
+												Minimum supported horizontal visibility, in kilometers, available in the loaded dataset. Lower visibility corresponds to a hazier atmosphere.
+								</member>
+				</members>
+</class>

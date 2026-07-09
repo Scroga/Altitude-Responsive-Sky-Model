@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SkyModelUtils" inherits="Node3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+				<brief_description>
+								Utility class providing helper methods for configuring the sky model and scene lighting.
+				</brief_description>
+				<description>
+								[SkyModelUtils] is a Godot native extension utility class that exposes helper methods used when preparing sky model parameters from GDScript.
+								The class does not store any sky model state and does not generate textures directly. Instead, it provides static helper methods for generating altitude sample arrays and for estimating a suitable sunlight color temperature for Godot's light settings.
+								The altitude generation methods are useful when creating multiple sky textures for different observer heights. [method generate_linear_altitudes] creates evenly spaced altitude values, while [method generate_non_linear_altitudes] creates values distributed non-linearly between the minimum and maximum altitude.
+								[method compute_sun_light_temperature] provides an artistic approximation of direct sunlight color temperature. It is intended for use with Godot's light temperature settings and should not be treated as a physically exact atmospheric simulation result.
+				</description>
+				<tutorials>
+				</tutorials>
+				<methods>
+								<method name="compute_sun_light_temperature" qualifiers="static">
+												<return type="float" />
+												<param index="0" name="elevation" type="float" />
+												<param index="1" name="altitude" type="float" />
+												<param index="2" name="visibility" type="float" />
+												<description>
+																Estimates the color temperature of direct sunlight from the given atmospheric parameters.
+																[param elevation] is the solar elevation angle in degrees. Low or negative elevations return a warm color temperature near the horizon, while higher elevations approach a neutral daylight value.
+																[param altitude] is the observer altitude above the ground, in meters. Higher altitude slightly increases the returned temperature because less atmosphere is assumed to affect the direct sunlight.
+																[param visibility] is the horizontal visibility, or meteorological range, in kilometers. Lower visibility represents a hazier atmosphere and slightly lowers the returned temperature, producing warmer sunlight.
+																The returned value is an approximate correlated color temperature in kelvin. It is intended mainly for Godot's [code]light_temperature[/code] property and should be used as an artistic helper rather than as a physically exact result.
+												</description>
+								</method>
+								<method name="generate_linear_altitudes" qualifiers="static">
+												<return type="PackedFloat32Array" />
+												<param index="0" name="min_altitude" type="float" />
+												<param index="1" name="max_altitude" type="float" />
+												<param index="2" name="count" type="int" />
+												<description>
+																Generates evenly spaced altitude values between [param min_altitude] and [param max_altitude].
+																[param min_altitude] is the first altitude value in the generated array, in meters.
+																[param max_altitude] is the last altitude value in the generated array, in meters.
+																[param count] is the number of altitude values to generate.
+																Returns a [PackedFloat32Array] containing [param count] values. If [param count] is less than or equal to [code]0[/code], an empty array is returned. If [param count] is [code]1[/code], the returned array contains only [param min_altitude].
+																This method is useful when sky textures should be generated at uniformly distributed observer altitudes.
+												</description>
+								</method>
+								<method name="generate_non_linear_altitudes" qualifiers="static">
+												<return type="PackedFloat32Array" />
+												<param index="0" name="min_altitude" type="float" />
+												<param index="1" name="max_altitude" type="float" />
+												<param index="2" name="count" type="int" />
+												<param index="3" name="exponent" type="float" />
+												<description>
+																Generates non-linearly spaced altitude values between [param min_altitude] and [param max_altitude].
+																[param min_altitude] is the first altitude value in the generated array, in meters.
+																[param max_altitude] is the last altitude value in the generated array, in meters.
+																[param count] is the number of altitude values to generate.
+																[param exponent] controls the distribution of the generated samples. Values greater than [code]1.0[/code] place more samples near [param min_altitude]. A value of [code]1.0[/code] produces the same distribution as linear spacing. If the exponent is less than or equal to [code]0.0[/code], it is treated as [code]1.0[/code].
+																Returns a [PackedFloat32Array] containing [param count] values. If [param count] is less than or equal to [code]0[/code], an empty array is returned. If [param count] is [code]1[/code], the returned array contains only [param min_altitude].
+																This method is useful when more texture samples are needed near the ground, where changes in atmospheric appearance are usually more noticeable.
+												</description>
+								</method>
+				</methods>
+</class>
