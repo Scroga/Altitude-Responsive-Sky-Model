@@ -1,12 +1,11 @@
 #ifndef CONSTANTS_HPP
 #define CONSTANTS_HPP
 
-#define _USE_MATH_DEFINES
-#include <math.h>
 #include <array>
 
 #include "sky_model.hpp"
 
+constexpr double PI = 3.1415;
 constexpr int SPECTRUM_CHANNELS = 11;
 constexpr double SPECTRUM_STEP = 40;
 using Spectrum = std::array<double, SPECTRUM_CHANNELS>;
@@ -132,7 +131,7 @@ constexpr double MAX_ALTITUDE_KM = 15.0;
 constexpr double ALTITUDE_CCT_INCREASE_PER_KM = 40.0;
 
 inline double degreesToRadians(const double degrees) {
-	return degrees * M_PI / 180.0;
+	return degrees * PI / 180.0;
 }
 
 #endif
