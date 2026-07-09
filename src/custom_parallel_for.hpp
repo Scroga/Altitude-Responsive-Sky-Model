@@ -18,12 +18,6 @@ void parallel_for(Index begin, Index end, Func fn) {
 	if (count <= 0)
 		return;
 
-#if defined(__EMSCRIPTEN__) && !defined(__EMSCRIPTEN_PTHREADS__)
-	// Web build without pthread support: run serially.
-	for (Index i = begin; i < end; ++i) {
-		fn(i);
-	}
-#else
 	unsigned int workers = std::thread::hardware_concurrency();
 	if (workers == 0)
 		workers = 4;
@@ -49,7 +43,6 @@ void parallel_for(Index begin, Index end, Func fn) {
 	for (auto &thread : threads) {
 		thread.join();
 	}
-#endif
 }
 
 
@@ -65,12 +58,6 @@ void parallel_for_chunks(Index begin, Index end, Index grainSize, Func fn) {
 	if (count <= 0)
 		return;
 
-#if defined(__EMSCRIPTEN__) && !defined(__EMSCRIPTEN_PTHREADS__)
-	// Web build without pthread support: run serially.
-	for (Index i = begin; i < end; ++i) {
-		fn(i);
-	}
-#else
 	unsigned int workers = std::thread::hardware_concurrency();
 	if (workers == 0)
 		workers = 4;
@@ -102,7 +89,6 @@ void parallel_for_chunks(Index begin, Index end, Index grainSize, Func fn) {
 	for (auto &thread : threads) {
 		thread.join();
 	}
-#endif
 }
 
 #endif
