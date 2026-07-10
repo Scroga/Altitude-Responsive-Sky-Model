@@ -31,8 +31,8 @@ uniform float soft_glow_intensity = 0.03;
 
 uniform float sun_horizon_fade_width = 0.03;
 
-const float SKY_DIRECTION_Y_OFFSET_MIN = 0.01;
-const float SKY_DIRECTION_Y_OFFSET_MAX = 0.08;
+const float SKY_DIRECTION_Y_OFFSET_MIN = 0.001;
+const float SKY_DIRECTION_Y_OFFSET_MAX = 0.04;
 
 const bool clamp_sky_to_horizon = true;
 
