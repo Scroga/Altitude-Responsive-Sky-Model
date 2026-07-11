@@ -9,11 +9,6 @@ render_mode use_debanding;
 
 const int MAX_TEXTURES_COUNT = 32;
 
-group_uniforms textures;
-uniform sampler2DArray precomputed_textures_array : filter_linear, repeat_disable;
-uniform float precomputed_altitudes[MAX_TEXTURES_COUNT];
-uniform int precomputed_texture_count;
-
 group_uniforms general;
 uniform bool sky_visible = true;
 uniform bool sun_visible = true;
@@ -22,6 +17,12 @@ uniform float elevation_rad = 0.0;
 uniform float precomputed_altitude_min = 0.001;
 uniform float precomputed_altitude_max = 15000.0;
 uniform float altitude = 0.0;
+
+group_uniforms textures;
+uniform sampler2DArray precomputed_textures_array : filter_linear, repeat_disable;
+uniform float precomputed_altitudes[MAX_TEXTURES_COUNT];
+uniform int precomputed_texture_count;
+
 
 group_uniforms postprocessing;
 uniform float exposure = -5.0;
