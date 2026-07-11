@@ -1,3 +1,9 @@
+// Copyright (c) 2026 Ilia Riabko
+//
+// Created as part of a bachelor's thesis at Charles University, Prague.
+//
+// SPDX-License-Identifier: MIT
+
 shader_type sky;
 render_mode use_debanding;
 

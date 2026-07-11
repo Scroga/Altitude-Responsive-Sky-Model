@@ -1,5 +1,10 @@
+// Copyright (c) 2026 Ilia Riabko
 // Copyright (c) 2023-2025 Cory Petkovsek and Contributors
 // Copyright (c) 2021 J. Cuellar
+//
+// Modified as part of a bachelor's thesis at Charles University, Prague.
+//
+// SPDX-License-Identifier: MIT
 
 const float INV_PI      = 1. / PI;
 const float HALF_PI     = PI / 2.;

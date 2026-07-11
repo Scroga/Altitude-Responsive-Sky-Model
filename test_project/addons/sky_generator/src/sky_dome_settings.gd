@@ -1,3 +1,11 @@
+# Copyright (c) 2026 Ilia Riabko
+# Copyright (c) 2023-2025 Cory Petkovsek and Contributors
+# Copyright (c) 2021 J. Cuellar
+#
+# Modified as part of a bachelor's thesis at Charles University, Prague.
+#
+# SPDX-License-Identifier: MIT
+
 @tool
 class_name SkyDomeSettings
 extends Node

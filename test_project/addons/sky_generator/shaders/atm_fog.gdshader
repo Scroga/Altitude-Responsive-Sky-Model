@@ -1,5 +1,10 @@
+// Copyright (c) 2026 Ilia Riabko
 // Copyright (c) 2023-2025 Cory Petkovsek and Contributors
 // Copyright (c) 2021 J. Cuellar
+//
+// Modified as part of a bachelor's thesis at Charles University, Prague.
+//
+// SPDX-License-Identifier: MIT
 
 shader_type spatial;
 render_mode blend_mix, cull_front, unshaded, fog_disabled;

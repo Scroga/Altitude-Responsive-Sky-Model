@@ -1,5 +1,10 @@
-@tool
+# Copyright (c) 2026 Ilia Riabko
+#
+# Created as part of a bachelor's thesis at Charles University, Prague.
+#
+# SPDX-License-Identifier: MIT
 
+@tool
 class_name SkyModel
 extends WorldEnvironment
 
