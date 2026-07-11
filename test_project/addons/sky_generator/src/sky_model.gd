@@ -45,9 +45,11 @@ func _build_precomputed_texture_array(images: Array[Image]) -> Texture2DArray:
 #####################
 @export_group("Dataset Loading")
 
+# Path to the Prague Sky Model dataset file.
 @export_global_file("*.dat")
 var dataset_path: String = "SkyModelDataset.dat"
 
+# Visibility range to load from the dataset; smaller ranges reduce memory usage.
 @export_enum(
 	"20.0 - 27.6",
 	"27.6 - 40.0",
@@ -56,11 +58,13 @@ var dataset_path: String = "SkyModelDataset.dat"
 	"90.0 - 131.8")
 var visibility_range := 0
 
+# Loads the selected dataset visibility range into the sky texture generator.
 func _read_dataset() -> void:
 	if sky_texture_generator == null:
 		push_error("sky_texture_generator is null")
 		return
 
+	# Representative visibility value used to select the closest dataset slice.	
 	var single_visibility := 0.0
 	match visibility_range:
 		0: single_visibility = 23.8
@@ -72,10 +76,12 @@ func _read_dataset() -> void:
 		
 	sky_texture_generator.read_dataset(dataset_path, single_visibility)
 
+	# Update parameter limits from the loaded dataset.
 	parameters.set_generator(sky_texture_generator)
 	parameters.clamp_to_generator()
 	notify_property_list_changed()
 
+# Editor button used to load or reload the selected dataset.
 @export_tool_button("Read Dataset")
 var read_dataset_button = _read_dataset
 
@@ -83,7 +89,11 @@ var read_dataset_button = _read_dataset
 ## Precomputed Data
 #####################
 @export_group("Precomputed Data")
+
+# Sky textures precomputed for different observer altitudes.
 @export var precomputed_textures: Array[Image] = []
+
+# Altitude values corresponding to the precomputed sky textures.
 @export var precomputed_altitudes: PackedFloat32Array = PackedFloat32Array()
 
 #####################
@@ -91,13 +101,15 @@ var read_dataset_button = _read_dataset
 #####################
 @export_group("Runtime Altitude")
 
+# Node used as the runtime source for observer altitude.
 @export_node_path("Node3D")
 var altitude_source_path: NodePath
-
+# Current observer altitude used for sky texture selection.
 var player_altitude: float = 0.0
 
+# Value added to the measured runtime altitude.
 @export var altitude_offset: float = 0.0
-
+# Multiplier applied to the measured runtime altitude.
 @export var altitude_scale: float = 1.0
 
 #####################
@@ -105,6 +117,7 @@ var player_altitude: float = 0.0
 #####################
 @export_group("Display")
 
+# Exposure adjustment applied to the sky material.
 @export_range(-10.0, 10.0, 0.1)
 var exposure: float = -5.0:
 	set(value):
@@ -112,24 +125,26 @@ var exposure: float = -5.0:
 		if sky_material:
 			sky_material.set_shader_parameter("exposure", exposure)
 			
+# Horizontal sun direction in degrees.
 @export_range(0.0, 360.0, 0.1, "degrees")
 var azimuth: float = 0.0:
 	set(value):
 		azimuth = value
 		_update_sun()
-		
+
+# Enables or disables the rendered sun disc.
 @export var sun_visible: bool = true:
 	set(value):
 		sun_visible = value
 		if sky_material:
 			sky_material.set_shader_parameter("sun_visible", sun_visible)
-
+# Enables or disables the sky background.
 @export var sky_visible: bool = true:
 	set(value):
 		sky_visible = value
 		if sky_material:
 			sky_material.set_shader_parameter("sky_visible", sky_visible)
-			
+# Enables or disables atmospheric fog rendering.		
 @export var fog_visible: bool = true:
 	set(value):
 		fog_visible = value

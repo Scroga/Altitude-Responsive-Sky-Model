@@ -12,6 +12,7 @@ const MAX_TEXTURES_COUNT = 32
 const DEFAULT_PRECOMPUTED_TEXTURE_COUNT := 16
 const DEFAULT_ALTITUDE_DENSITY_POWER := 2.0
 
+# Sky texture generator used to query dataset limits and generate textures.
 var _generator: SkyTextureGenerator = null
 
 var _albedo: float = DEFAULT_ALBEDO
@@ -20,8 +21,11 @@ var _elevation: float = DEFAULT_ELEVATION
 var _visibility: float = DEFAULT_VISIBILITY
 var _resolution: int = DEFAULT_RESOLUTION
 
+# Highest altitude included when precomputing sky textures.
 var _max_precompute_altitude: float = MAX_ALTITUDE
+# Number of sky textures to precompute across altitude.
 var _precomputed_texture_count: int = DEFAULT_PRECOMPUTED_TEXTURE_COUNT
+# Controls how densely precomputed altitude samples are placed near the ground.
 var _altitude_density_power: float = DEFAULT_ALTITUDE_DENSITY_POWER
 
 func set_generator(generator: SkyTextureGenerator) -> void:
@@ -34,6 +38,7 @@ func has_generator() -> bool:
 func is_available() -> bool:
 	return _generator != null and _generator.is_initialized
 
+# Clamps all stored parameters to the limits exposed by the generator.
 func clamp_to_generator(generator: SkyTextureGenerator = null) -> void:
 	if generator != null:
 		_generator = generator
