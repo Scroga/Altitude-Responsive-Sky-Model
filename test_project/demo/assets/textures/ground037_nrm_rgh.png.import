@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c307hdmos4gtm"
-path.bptc="res://.godot/imported/rock023_nrm_rgh.png-b25d05d29cc59bf3c4181d02b21be1eb.bptc.ctex"
+uid="uid://c1ots7w6i0i1q"
+path.bptc="res://.godot/imported/ground037_nrm_rgh.png-02372c72ee87f1844ee708d952e43e96.bptc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
@@ -11,8 +11,8 @@ metadata={
 
 [deps]
 
-source_file="res://sky_model/demo/assets/textures/rock023_nrm_rgh.png"
-dest_files=["res://.godot/imported/rock023_nrm_rgh.png-b25d05d29cc59bf3c4181d02b21be1eb.bptc.ctex"]
+source_file="res://demo/assets/textures/ground037_nrm_rgh.png"
+dest_files=["res://.godot/imported/ground037_nrm_rgh.png-02372c72ee87f1844ee708d952e43e96.bptc.ctex"]
 
 [params]
 
@@ -38,4 +38,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=0
+detect_3d/compress_to=1

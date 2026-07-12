@@ -1,9 +1,9 @@
 [gd_scene load_steps=10 format=3 uid="uid://chol2xlfbq7cu"]
 
-[ext_resource type="Script" uid="uid://chstoagn42gbr" path="res://sky_model/demo/src/DemoScene.gd" id="1_umghc"]
-[ext_resource type="PackedScene" uid="uid://d2jihfohphuue" path="res://sky_model/demo/components/UI.tscn" id="2_eaos1"]
-[ext_resource type="PackedScene" uid="uid://domhm87hbhbg1" path="res://sky_model/demo/components/Player.tscn" id="3_wlawv"]
-[ext_resource type="Terrain3DAssets" uid="uid://dal3jhw6241qg" path="res://sky_model/demo/data/assets.tres" id="4_7c7ev"]
+[ext_resource type="Script" uid="uid://chstoagn42gbr" path="res://demo/src/DemoScene.gd" id="1_umghc"]
+[ext_resource type="PackedScene" uid="uid://d2jihfohphuue" path="res://demo/components/UI.tscn" id="2_eaos1"]
+[ext_resource type="PackedScene" uid="uid://domhm87hbhbg1" path="res://demo/components/Player.tscn" id="3_wlawv"]
+[ext_resource type="Terrain3DAssets" uid="uid://dal3jhw6241qg" path="res://demo/data/assets.tres" id="4_7c7ev"]
 
 [sub_resource type="SphereMesh" id="SphereMesh_8wcvr"]
 height = 0.5
@@ -89,7 +89,7 @@ mesh = SubResource("SphereMesh_8wcvr")
 skeleton = NodePath("")
 
 [node name="Terrain3D" type="Terrain3D" parent="."]
-data_directory = "res://sky_model/demo/data"
+data_directory = "res://demo/data"
 material = SubResource("Terrain3DMaterial_jrc01")
 assets = ExtResource("4_7c7ev")
 collision_mode = 0

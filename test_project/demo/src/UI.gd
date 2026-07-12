@@ -4,6 +4,7 @@ extends Control
 var player: Node
 var visible_mode: int = 1
 
+const SCREENSHOT_DIR := "res://screenshots/"
 
 func _init() -> void:
 	RenderingServer.set_debug_generate_wireframes(true)
@@ -23,6 +24,7 @@ func _process(_delta) -> void:
 			
 
 			Window
+			Screenshot: F7
 			Quit: F8
 			UI toggle: F9
 			Render mode: F10
@@ -34,6 +36,8 @@ func _process(_delta) -> void:
 func _unhandled_key_input(p_event: InputEvent) -> void:
 	if p_event is InputEventKey and p_event.pressed:
 		match p_event.keycode:
+			KEY_F7:
+				take_screenshot()
 			KEY_F8:
 				get_tree().quit()
 			KEY_F9:
@@ -62,3 +66,22 @@ func toggle_fullscreen() -> void:
 		DisplayServer.window_set_size(Vector2(1280, 720))
 	else:
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN)
+
+func take_screenshot() -> void:
+	await RenderingServer.frame_post_draw
+
+	var screenshot_directory := SCREENSHOT_DIR
+	DirAccess.make_dir_recursive_absolute(screenshot_directory)
+
+	var image := get_viewport().get_texture().get_image()
+
+	var timestamp := Time.get_datetime_string_from_system().replace(":", "-")
+	var filename := "screenshot_%s.png" % timestamp
+	var path := screenshot_directory.path_join(filename)
+
+	var error := image.save_png(path)
+
+	if error == OK:
+		print("Screenshot saved to: ", ProjectSettings.globalize_path(path))
+	else:
+		push_error("Failed to save screenshot. Error: %s" % error)
