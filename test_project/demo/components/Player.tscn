@@ -28,8 +28,9 @@ margin = 0.5
 
 [node name="Camera3D" type="Camera3D" parent="CameraManager/Arm"]
 unique_name_in_owner = true
+fov = 60.0
 near = 0.25
-far = 100000.0
+far = 700000.0
 
 [node name="CollisionShapeBody" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0)

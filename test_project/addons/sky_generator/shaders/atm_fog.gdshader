@@ -21,7 +21,7 @@ uniform float high_altitude_end = 8000.0;
 uniform float altitude_max = 15000.0;
 uniform float high_altitude_sunset_tint = 0.15;
 
-uniform float falloff_at_max_altitude = 50.0;
+uniform float falloff_at_max_altitude = 30.0;
 uniform float falloff_altitude_curve : hint_range(0.25, 8.0) = 4.0;
 
 uniform float falloff_low_visibility = 4.0;
@@ -172,8 +172,14 @@ void vertex() {
 void fragment() {
 	// Calculate world pixel position from depth
 	float depth_raw = texture(DEPTH_TEXTURE, SCREEN_UV).r;
-	depth_raw = depth_raw * 2.0 - 1.0;
-
+	#ifndef CURRENT_RENDERER
+		// For 4.3 or earlier, will break if far plane is less than 1m.
+		depth_raw = PROJECTION_MATRIX[3][2] > PROJECTION_MATRIX[2][2] ? depth_raw : depth_raw * 2.0 - 1.0;
+	#else
+		#if CURRENT_RENDERER == RENDERER_COMPATIBILITY
+			depth_raw = depth_raw * 2.0 - 1.0;
+		#endif
+	#endif
 	vec3 ndc = vec3(SCREEN_UV * 2.0 - 1.0, depth_raw);
 	vec4 clip_pos = INV_PROJECTION_MATRIX * vec4(ndc, 1.0);
 	vec3 view_pos = clip_pos.xyz / clip_pos.w;

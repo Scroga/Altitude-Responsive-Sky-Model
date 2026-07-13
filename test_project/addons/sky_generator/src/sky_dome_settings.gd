@@ -144,14 +144,14 @@ func _update_color_correction(tonemap_level: float, exposure: float) -> void:
 			fog_material.set_shader_parameter("atm_darkness", atm_darkness)
 
 ## Higher values increase the sun's contribution to the atmosphere.
-@export var atm_sun_intensity: float = 18.0 :
+@export var atm_sun_intensity: float = 30.0 :
 	set(value):
 		atm_sun_intensity = value
 		if is_scene_built:
 			fog_material.set_shader_parameter("atm_sun_intensity", atm_sun_intensity)
 
 ## Color tint applied to the daytime sky atmosphere.
-@export var atm_day_tint := Color(0.807843, 0.909804, 1.0) :
+@export var atm_day_tint := Color(0.99, 0.99, 1.0) :
 	set(value):
 		atm_day_tint = value
 		if is_scene_built:
@@ -165,7 +165,7 @@ func _update_color_correction(tonemap_level: float, exposure: float) -> void:
 			fog_material.set_shader_parameter("atm_thickness", atm_thickness)
 
 ## Sets the Mie scattering: the haze and white light diffusion around the sun.
-@export var atm_mie: float = 0.07 :
+@export var atm_mie: float = 0.025 :
 	set(value):
 		atm_mie = value
 		_update_beta_mie()
@@ -250,7 +250,7 @@ var sun_disk_size: float = 0.015:
 			sky_material.set_shader_parameter("sun_disk_color", sun_disk_color)
 
 ## Color tint applied to atmosphere during sunrise and sunset.
-@export var horizon_light_tint: Color = Color(1.0, 0.45, 0.05, 1.0):
+@export var horizon_light_tint: Color = Color(1.0, 0.662, 0.548, 1.0):
 	set(value):
 		horizon_light_tint = value
 		if sky_material:
@@ -313,7 +313,7 @@ var sun_horizon_fade_width: float = 0.03:
 			fog_mesh.visible = fog_visible
 			
 # Controls how quickly fog accumulates with distance.
-@export_exp_easing() var fog_density: float = 0.000225:
+@export_exp_easing() var fog_density: float = 0.00004:
 	set(value):
 		fog_density = value
 		if is_scene_built:
