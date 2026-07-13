@@ -141,10 +141,8 @@ void SkyTextureGenerator::render(
 			visibility,
 			albedo);
 
-	const std::size_t chunkSize = 8;
 
-	//parallel_for<std::size_t>(0, xTextureSize, [&](std::size_t x) {
-	parallel_for_chunks<std::size_t>(0, xTextureSize, chunkSize, [&](std::size_t x) {
+	parallel_for<std::size_t>(0, xTextureSize, [&](std::size_t x) {
 		for (int y = 0; y < yTextureSize; y++) {
 			// For each pixel of the rendered image get the corresponding direction in fisheye projection.
 			SkyModel::Vector3 viewDir = this->pixelToDirection(x + xTextureSize, y, yTextureSize);
