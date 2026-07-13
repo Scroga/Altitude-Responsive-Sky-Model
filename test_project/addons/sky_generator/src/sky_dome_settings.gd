@@ -313,7 +313,7 @@ var sun_horizon_fade_width: float = 0.03:
 			fog_mesh.visible = fog_visible
 			
 # Controls how quickly fog accumulates with distance.
-@export_exp_easing() var fog_density: float = 0.00004:
+@export_exp_easing() var fog_density: float = 0.000035:
 	set(value):
 		fog_density = value
 		if is_scene_built:
