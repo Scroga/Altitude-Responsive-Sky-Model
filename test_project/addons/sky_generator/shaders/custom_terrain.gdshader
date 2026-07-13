@@ -763,15 +763,14 @@ void fragment() {
 	AO = clamp(1. - ao * mat.ao_strength, mat.albedo_height.a, 1.0);
 	AO_LIGHT_AFFECT = (1.0 - mat.albedo_height.a) * clamp(mat.normal_rough.y, 0., 1.);
 
-	if (_camera_pos.y >= altitude_start) {
-		float fade_end = fade_start + fade_width;
-		ALPHA = 1.0 - smoothstep(
-			fade_start,
-			fade_end,
-			v_vertex_xz_dist
-		);
-	} else {
-		ALPHA = 1.0;
-	}
+	//if (_camera_pos.y >= altitude_start) {
+		//float fade_end = fade_start + fade_width;
+		//ALPHA = 1.0 - smoothstep(
+			//fade_start,
+			//fade_end,
+			//v_vertex_xz_dist
+		//);
+	//} else {
+		//ALPHA = 1.0;
+	//}
 }
-
