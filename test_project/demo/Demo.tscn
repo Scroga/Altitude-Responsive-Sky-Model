@@ -1,14 +1,10 @@
-[gd_scene load_steps=11 format=3 uid="uid://chol2xlfbq7cu"]
+[gd_scene load_steps=10 format=3 uid="uid://chol2xlfbq7cu"]
 
 [ext_resource type="Script" uid="uid://chstoagn42gbr" path="res://demo/src/DemoScene.gd" id="1_umghc"]
 [ext_resource type="PackedScene" uid="uid://d2jihfohphuue" path="res://demo/components/UI.tscn" id="2_eaos1"]
 [ext_resource type="PackedScene" uid="uid://domhm87hbhbg1" path="res://demo/components/Player.tscn" id="3_wlawv"]
 [ext_resource type="Terrain3DAssets" uid="uid://dal3jhw6241qg" path="res://demo/data/assets.tres" id="4_7c7ev"]
 [ext_resource type="Shader" uid="uid://b47x1a8gqvo1y" path="res://addons/sky_generator/shaders/custom_terrain.gdshader" id="7_fwrtk"]
-
-[sub_resource type="SphereMesh" id="SphereMesh_8wcvr"]
-height = 0.5
-is_hemisphere = true
 
 [sub_resource type="Gradient" id="Gradient_vr1m7"]
 offsets = PackedFloat32Array(0.2, 1)
@@ -83,13 +79,6 @@ script = ExtResource("1_umghc")
 transform = Transform3D(-0.99999964, 0, -8.742275e-08, 0, 1, 0, 8.742275e-08, 0, -0.99999964, 687.09766, 708.1538, 0)
 first_person = true
 gravity_enabled = false
-
-[node name="DebugSphere" type="MeshInstance3D" parent="."]
-transform = Transform3D(12742000, 0, 0, 0, 12742000, 0, 0, 0, 12742000, 0, -6371000, 0)
-visible = false
-cast_shadow = 0
-mesh = SubResource("SphereMesh_8wcvr")
-skeleton = NodePath("")
 
 [node name="Terrain3D" type="Terrain3D" parent="."]
 data_directory = "res://demo/data"
