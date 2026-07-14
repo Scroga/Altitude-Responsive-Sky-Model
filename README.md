@@ -33,8 +33,4 @@ Developed for the Godot community by Ilia Riabko under the supervision of [Alexa
 
 ## License
 
-The original code in this repository is licensed under the MIT License.
-See [LICENSE](LICENSE.txt) for details.
-
-Third-party components and assets remain subject to their respective
-licenses. See [THIRD_PARTY_LICENSES](docs/THIRD_PARTY_LICENSES.txt).
+This addon has been released under the [MIT License](LICENSE.txt).
