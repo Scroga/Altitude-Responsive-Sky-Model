@@ -521,11 +521,7 @@ void accumulate_material(const vec3 base_ddx, const vec3 base_ddy, const float w
 }
 
 void fragment() {
-	const float altitude_start = 2500.0;
-	const float fade_start = 280000.0;
-	const float fade_width = 50000.0;
-
-	float discard_distance = fade_start + fade_width;
+	const float discard_distance = 300000.0;
 	if (v_vertex_xz_dist >= discard_distance ) {
 		discard;
 	}
