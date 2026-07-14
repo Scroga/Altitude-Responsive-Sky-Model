@@ -50,7 +50,8 @@ uniform float fog_end = 1000.;
 group_uniforms atmosphere;
 uniform float atm_darkness = 0.5;
 uniform float atm_sun_intensity = 10.0;
-uniform vec4 atm_day_tint: source_color = vec4(0.78, 0.85, 0.98, 1.0);
+uniform vec4 atm_day_tint_min: source_color = vec4(0.78, 0.85, 0.98, 1.0);
+uniform vec4 atm_day_tint_max: source_color = vec4(0.78, 0.85, 0.98, 1.0);
 uniform vec4 atm_horizon_light_tint: source_color = vec4(0.98, 0.73, 0.49, 1.0);
 uniform vec4 atm_night_tint: source_color = vec4(0.16, 0.2, 0.25, 1.0);
 uniform vec3 atm_level_params = vec3(1.0, 0.0, 0.0);
@@ -63,12 +64,12 @@ uniform vec3 atm_sun_partial_mie_phase = vec3(0.0, 0.0, 0.0);
 uniform vec4 atm_sun_mie_tint: source_color = vec4(1.);
 uniform float atm_sun_mie_intensity = 1.;
 
-uniform float mie_scale_height = 1200.0;
+uniform float mie_scale_height = 4000.0;
 uniform float mie_min_density = 0.02;
 
 uniform float mie_horizon_elevation_deg = 12.0;
 uniform float mie_below_horizon_fade_deg = 6.0;
-uniform float mie_horizon_intensity = 2.5;
+uniform float mie_horizon_intensity = 0.8;
 uniform float mie_zenith_intensity = 0.35;
 
 #include "utils.gdshaderinc"
@@ -79,6 +80,7 @@ vec3 calc_atmospheric_scatter(
 	 float sm,
 	float sun_mu,
 	vec3 mult,
+	vec3 atm_day_tint,
 	float depth,
 	float altitude_sun_factor,
 	float mie_altitude_factor,
@@ -257,16 +259,23 @@ void fragment() {
 	float high_altitude_factor = smoothstep(high_altitude_start, high_altitude_end, viewer_altitude);
 	float altitude_sun_factor = mix(1.0, high_altitude_sunset_tint, high_altitude_factor);
 
+	float solar_elevation = get_solar_elevation_rad(sun_direction);
+	float solar_elevation_t = clamp(solar_elevation / HALF_PI, 0.0, 1.0);
+	solar_elevation_t = pow(solar_elevation_t, 0.3);
+
 	float sr, sm;
 	calc_simple_optical_depth(ray_direction.y + atm_level_params.z, sr, sm, atm_level_params.xy);
 	float mie_altitude_factor = calc_mie_altitude_factor(viewer_altitude);
-	float mie_solar_factor = calc_mie_solar_factor(get_solar_elevation_rad(sun_direction));
+	float mie_solar_factor = calc_mie_solar_factor(solar_elevation);
+
+	vec3 atm_day_tint = mix(atm_day_tint_min.rgb, atm_day_tint_max.rgb, solar_elevation_t);
 
 	vec3 scatter = calc_atmospheric_scatter(
 		sr,
 		sm,
 		sun_mu,
 		v_angle_mult.xyz,
+		atm_day_tint,
 		ray_distance,
 		altitude_sun_factor,
 		mie_altitude_factor,

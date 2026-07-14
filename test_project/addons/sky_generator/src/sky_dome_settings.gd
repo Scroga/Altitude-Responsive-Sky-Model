@@ -95,7 +95,8 @@ func _apply_all_parameters() -> void:
 
 	fog_material.set_shader_parameter("atm_darkness", atm_darkness)
 	fog_material.set_shader_parameter("atm_sun_intensity", atm_sun_intensity)
-	fog_material.set_shader_parameter("atm_day_tint", atm_day_tint)
+	fog_material.set_shader_parameter("atm_day_tint_min", atm_day_tint_min)
+	fog_material.set_shader_parameter("atm_day_tint_max", atm_day_tint_max)
 	fog_material.set_shader_parameter("atm_horizon_light_tint", horizon_light_tint)
 	fog_material.set_shader_parameter("atm_thickness", atm_thickness)
 	fog_material.set_shader_parameter("atm_sun_mie_tint", atm_sun_mie_tint)
@@ -150,12 +151,19 @@ func _update_color_correction(tonemap_level: float, exposure: float) -> void:
 		if is_scene_built:
 			fog_material.set_shader_parameter("atm_sun_intensity", atm_sun_intensity)
 
-## Color tint applied to the daytime sky atmosphere.
-@export var atm_day_tint := Color(1.0, 1.0, 1.0):
+## Color tint applied to the daytime sky atmosphere at 0.0 degree soloar elevation.
+@export var atm_day_tint_min := Color(1.0, 1.0, 1.0):
 	set(value):
-		atm_day_tint = value
+		atm_day_tint_min = value
 		if is_scene_built:
-			fog_material.set_shader_parameter("atm_day_tint", atm_day_tint)
+			fog_material.set_shader_parameter("atm_day_tint_min", atm_day_tint_min)
+			
+## Color tint applied to the daytime sky atmosphere at 90.0 degree solar elevatino.
+@export var atm_day_tint_max := Color(1.0, 1.0, 1.0):
+	set(value):
+		atm_day_tint_max = value
+		if is_scene_built:
+			fog_material.set_shader_parameter("atm_day_tint_max", atm_day_tint_max)
 
 # Controls the overall thickness and strength of the atmospheric fog.
 @export_range(0.0, 100.0, 0.01) var atm_thickness: float = 0.5:
@@ -165,7 +173,7 @@ func _update_color_correction(tonemap_level: float, exposure: float) -> void:
 			fog_material.set_shader_parameter("atm_thickness", atm_thickness)
 
 ## Sets the Mie scattering: the haze and white light diffusion around the sun.
-@export var atm_mie: float = 0.025 :
+@export var atm_mie: float = 0.035 :
 	set(value):
 		atm_mie = value
 		_update_beta_mie()
