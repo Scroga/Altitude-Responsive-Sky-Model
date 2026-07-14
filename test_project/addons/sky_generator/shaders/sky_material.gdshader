@@ -23,7 +23,6 @@ uniform sampler2DArray precomputed_textures_array : filter_linear, repeat_disabl
 uniform float precomputed_altitudes[MAX_TEXTURES_COUNT];
 uniform int precomputed_texture_count;
 
-
 group_uniforms postprocessing;
 uniform float exposure = -5.0;
 
@@ -39,7 +38,7 @@ uniform float soft_glow_intensity = 0.03;
 uniform float sun_horizon_fade_width = 0.03;
 
 const float SKY_DIRECTION_Y_OFFSET_MIN = 0.001;
-const float SKY_DIRECTION_Y_OFFSET_MAX = 0.04;
+const float SKY_DIRECTION_Y_OFFSET_MAX = 0.05;
 
 const bool clamp_sky_to_horizon = true;
 

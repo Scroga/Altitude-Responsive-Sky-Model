@@ -33,7 +33,7 @@ uniform float visibility_max = 131.0;
 
 uniform float planet_radius = 6371000.0; // Earth radius in meters
 uniform float horizon_roundness : hint_range(0.0, 1.0) = 0.6;
-uniform float horizon_curve_strength : hint_range(0.0, 8.0) = 0.5;
+uniform float horizon_curve_strength : hint_range(0.0, 8.0) = 0.7;
 
 uniform sampler2D DEPTH_TEXTURE : hint_depth_texture, filter_linear_mipmap;
 
