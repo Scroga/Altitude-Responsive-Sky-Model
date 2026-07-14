@@ -123,3 +123,11 @@ vec3 rotate_xyz(vec3 dir, vec3 angles) {
 
 	return normalize(dir);
 }
+
+float get_solar_elevation_rad(vec3 sun_dir) {
+	vec3 direction_to_sun = normalize(sun_dir);
+
+	return asin(
+		clamp(dot(direction_to_sun, vec3(0.0, 1.0, 0.0)), -1.0, 1.0)
+	);
+}

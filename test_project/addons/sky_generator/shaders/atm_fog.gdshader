@@ -66,7 +66,6 @@ uniform float atm_sun_mie_intensity = 1.;
 uniform float mie_scale_height = 1200.0;
 uniform float mie_min_density = 0.02;
 
-uniform float solar_elevation_rad = 0.0;
 uniform float mie_horizon_elevation_deg = 12.0;
 uniform float mie_below_horizon_fade_deg = 6.0;
 uniform float mie_horizon_intensity = 2.5;
@@ -77,10 +76,10 @@ uniform float mie_zenith_intensity = 0.35;
 // Atmosphere
 vec3 calc_atmospheric_scatter(
 	float sr,
-	 float sm, 
-	float sun_mu, 
-	vec3 mult, 
-	float depth, 
+	 float sm,
+	float sun_mu,
+	vec3 mult,
+	float depth,
 	float altitude_sun_factor,
 	float mie_altitude_factor,
 	float mie_solar_factor) {
@@ -99,7 +98,7 @@ vec3 calc_atmospheric_scatter(
 		* mie_solar_factor
 		* atm_sun_mie_tint.rgb
 		* clamp_to_unit(depth * fog_mie_depth);
-		
+
 	vec3 BRMT = (BRT + BMT) / (beta_ray + beta_mie);
 	vec3 scatter = atm_sun_intensity * (BRMT * final_extc_factor) * atm_day_tint.rgb * mult.y;
 	scatter = mix(scatter, scatter * (1.0 - extc_factor), atm_darkness);
@@ -261,8 +260,8 @@ void fragment() {
 	float sr, sm;
 	calc_simple_optical_depth(ray_direction.y + atm_level_params.z, sr, sm, atm_level_params.xy);
 	float mie_altitude_factor = calc_mie_altitude_factor(viewer_altitude);
-	float mie_solar_factor = calc_mie_solar_factor(solar_elevation_rad);
-	
+	float mie_solar_factor = calc_mie_solar_factor(get_solar_elevation_rad(sun_direction));
+
 	vec3 scatter = calc_atmospheric_scatter(
 		sr,
 		sm,
@@ -273,7 +272,7 @@ void fragment() {
 		mie_altitude_factor,
 		mie_solar_factor
 	);
-	
+
 	vec4 fog_color = vec4(scatter, fog_factor);
 	fog_color.a = clamp(fog_color.a, 0.0, 1.0);
 	fog_color.rgb = apply_photo_tonemap(fog_color.rgb, fog_exposure, tonemap_level);

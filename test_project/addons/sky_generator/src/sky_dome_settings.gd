@@ -151,7 +151,7 @@ func _update_color_correction(tonemap_level: float, exposure: float) -> void:
 			fog_material.set_shader_parameter("atm_sun_intensity", atm_sun_intensity)
 
 ## Color tint applied to the daytime sky atmosphere.
-@export var atm_day_tint := Color(0.918, 0.965, 1.0):
+@export var atm_day_tint := Color(1.0, 1.0, 1.0):
 	set(value):
 		atm_day_tint = value
 		if is_scene_built:

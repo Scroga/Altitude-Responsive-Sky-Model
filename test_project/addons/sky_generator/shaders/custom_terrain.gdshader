@@ -67,6 +67,30 @@ uniform highp sampler2DArray _texture_array_normal : hint_normal, filter_linear_
 
 // Public uniforms
 #define AUTO_SHADER
+
+uniform bool enable_earth_curvature = true;
+uniform float discard_distance : hint_range(200000, 400000.0) = 280000.0;
+uniform float earth_radius : hint_range(100000.0, 10000000.0, 1000.0) = 6371000.0;
+uniform vec2 curvature_origin = vec2(0.0, 0.0);
+uniform float curvature_strength : hint_range(0.0, 20.0, 0.01) = 1.0;
+varying vec2 v_curvature_slope;
+
+float get_earth_curvature_drop(vec2 world_xz) {
+	vec2 offset = world_xz - curvature_origin;
+	float distance_squared = dot(offset, offset);
+
+	return distance_squared / (2.0 * earth_radius) * curvature_strength;
+}
+
+vec2 get_earth_curvature_slope(vec2 world_xz) {
+	vec2 offset = world_xz - curvature_origin;
+
+	// Derivative of:
+	// y = -(x² + z²) / (2R)
+	return -offset / earth_radius * curvature_strength;
+}
+
+
 uniform float auto_slope : hint_range(0, 10) = 1.0;
 uniform float auto_height_reduction : hint_range(0, 1) = 0.1;
 uniform int auto_base_texture : hint_range(0, 31) = 0;
@@ -308,6 +332,16 @@ void vertex() {
 
 		v_vertex.y = h;
 	}
+	
+	// Apply simulated Earth curvature.
+	v_curvature_slope = vec2(0.0);
+
+	if (enable_earth_curvature) {
+		float curvature_drop = get_earth_curvature_drop(v_vertex.xz);
+
+		v_vertex.y -= curvature_drop;
+		v_curvature_slope = get_earth_curvature_slope(v_vertex.xz);
+	}
 
 	// Convert model space to view space w/ skip_vertex_transform render mode
 	VERTEX = (VIEW_MATRIX * vec4(v_vertex, 1.0)).xyz;
@@ -521,7 +555,6 @@ void accumulate_material(const vec3 base_ddx, const vec3 base_ddy, const float w
 }
 
 void fragment() {
-	const float discard_distance = 300000.0;
 	if (v_vertex_xz_dist >= discard_distance ) {
 		discard;
 	}
@@ -634,6 +667,43 @@ void fragment() {
 	}
 
 	// Apply terrain normals
+	// Rotate the height-map normal to follow the curved surface.
+	if (enable_earth_curvature && !flat_terrain_normals) {
+		// The unnormalized curved surface normal is:
+		// (-dy/dx, 1, -dy/dz)
+		vec3 curvature_up = normalize(vec3(
+			-v_curvature_slope.x,
+			1.0,
+			-v_curvature_slope.y
+		));
+
+		// Construct a local frame whose Y axis follows the curved surface.
+		vec3 curvature_tangent = normalize(vec3(
+			1.0,
+			v_curvature_slope.x,
+			0.0
+		));
+
+		vec3 curvature_binormal = normalize(cross(
+			curvature_up,
+			curvature_tangent
+		));
+
+		curvature_tangent = normalize(cross(
+			curvature_binormal,
+			curvature_up
+		));
+
+		mat3 curvature_basis = mat3(
+			curvature_tangent,
+			curvature_up,
+			curvature_binormal
+		);
+
+		w_normal = normalize(curvature_basis * w_normal);
+	}
+	
+	
 	if (flat_terrain_normals) {
 		NORMAL = normalize(cross(dFdyCoarse(VERTEX),dFdxCoarse(VERTEX)));
 		TANGENT = normalize(cross(NORMAL, VIEW_MATRIX[2].xyz));
