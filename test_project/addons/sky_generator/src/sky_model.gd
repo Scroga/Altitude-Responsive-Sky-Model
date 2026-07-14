@@ -466,20 +466,20 @@ func _get_property_list() -> Array[Dictionary]:
 		0.1,
 		"suffix:km"
 	))
-
-	properties.append({
-		"name": "resolution",
-		"type": TYPE_INT,
-		"hint": PROPERTY_HINT_RANGE,
-		"hint_string": "%d,%d,1" % [parameters.get_resolution_min(), parameters.get_resolution_max()],
-		"usage": PROPERTY_USAGE_DEFAULT
-	})
 	
 	# Precompute settings
 	properties.append({
 		"name": "Precompute Settings",
 		"type": TYPE_NIL,
 		"usage": PROPERTY_USAGE_GROUP
+	})
+	
+	properties.append({
+		"name": "texture_resolution",
+		"type": TYPE_INT,
+		"hint": PROPERTY_HINT_RANGE,
+		"hint_string": "%d,%d,1" % [parameters.get_resolution_min(), parameters.get_resolution_max()],
+		"usage": PROPERTY_USAGE_DEFAULT
 	})
 	
 	properties.append(_range_float_property(
@@ -524,7 +524,7 @@ func _property_can_revert(property: StringName) -> bool:
 		"altitude", \
 		"elevation", \
 		"visibility", \
-		"resolution", \
+		"texture_resolution", \
 		"max_precompute_altitude", \
 		"precomputed_texture_count", \
 		"altitude_density_power":
@@ -542,7 +542,7 @@ func _property_get_revert(property: StringName) -> Variant:
 			return SkyParameters.DEFAULT_ELEVATION
 		"visibility":
 			return parameters.get_visibility_min()
-		"resolution":
+		"texture_resolution":
 			return SkyParameters.DEFAULT_RESOLUTION
 		"max_precompute_altitude":
 			return SkyParameters.MAX_ALTITUDE
@@ -581,7 +581,7 @@ func _get(property: StringName) -> Variant:
 			return parameters.get_elevation()
 		"visibility":
 			return parameters.get_visibility()
-		"resolution":
+		"texture_resolution":
 			return parameters.get_resolution()
 		"max_precompute_altitude":
 			return parameters.get_max_precompute_altitude()
@@ -612,7 +612,7 @@ func _set(property: StringName, value: Variant) -> bool:
 		"visibility":
 			parameters.set_visibility(value)
 			return true
-		"resolution":
+		"texture_resolution":
 			parameters.set_resolution(value)
 			return true
 		"max_precompute_altitude":

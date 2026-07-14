@@ -522,7 +522,7 @@ void accumulate_material(const vec3 base_ddx, const vec3 base_ddy, const float w
 
 void fragment() {
 	const float altitude_start = 2500.0;
-	const float fade_start = 300000.0;
+	const float fade_start = 280000.0;
 	const float fade_width = 50000.0;
 
 	float discard_distance = fade_start + fade_width;
@@ -762,15 +762,4 @@ void fragment() {
 	float ao = (1. - (mat.albedo_height.a * log(2.1 - mat.ao_strength))) * (1. - mat.normal_rough.y);
 	AO = clamp(1. - ao * mat.ao_strength, mat.albedo_height.a, 1.0);
 	AO_LIGHT_AFFECT = (1.0 - mat.albedo_height.a) * clamp(mat.normal_rough.y, 0., 1.);
-
-	//if (_camera_pos.y >= altitude_start) {
-		//float fade_end = fade_start + fade_width;
-		//ALPHA = 1.0 - smoothstep(
-			//fade_start,
-			//fade_end,
-			//v_vertex_xz_dist
-		//);
-	//} else {
-		//ALPHA = 1.0;
-	//}
 }
