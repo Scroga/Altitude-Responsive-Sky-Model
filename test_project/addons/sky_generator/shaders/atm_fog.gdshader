@@ -63,11 +63,28 @@ uniform vec3 atm_sun_partial_mie_phase = vec3(0.0, 0.0, 0.0);
 uniform vec4 atm_sun_mie_tint: source_color = vec4(1.);
 uniform float atm_sun_mie_intensity = 1.;
 
+uniform float mie_scale_height = 1200.0;
+uniform float mie_min_density = 0.02;
+
+uniform float solar_elevation_rad = 0.0;
+uniform float mie_horizon_elevation_deg = 12.0;
+uniform float mie_below_horizon_fade_deg = 6.0;
+uniform float mie_horizon_intensity = 2.5;
+uniform float mie_zenith_intensity = 0.35;
+
 #include "utils.gdshaderinc"
 
 // Atmosphere
-vec3 calc_atmospheric_scatter(float sr, float sm, float sun_mu, vec3 mult, float depth, float altitude_sun_factor) {
-	vec3 beta_mie = atm_beta_mie;
+vec3 calc_atmospheric_scatter(
+	float sr,
+	 float sm, 
+	float sun_mu, 
+	vec3 mult, 
+	float depth, 
+	float altitude_sun_factor,
+	float mie_altitude_factor,
+	float mie_solar_factor) {
+	vec3 beta_mie = atm_beta_mie * mie_altitude_factor;
 	vec3 beta_ray = atm_beta_ray * atm_thickness;
 
 	vec3 extc_factor = clamp_rgb_to_unit(exp(-(beta_ray * sr + beta_mie * sm)));
@@ -78,8 +95,11 @@ vec3 calc_atmospheric_scatter(float sr, float sm, float sun_mu, vec3 mult, float
 	float rayleigh_phase = calc_rayleigh_phase(sun_mu);
 	vec3 BRT = beta_ray * rayleigh_phase * clamp_to_unit(depth * fog_rayleigh_depth);
 	vec3 BMT = beta_mie * calc_mie_phase(sun_mu, atm_sun_partial_mie_phase);
-	BMT *= atm_sun_mie_intensity * atm_sun_mie_tint.rgb * clamp_to_unit(depth * fog_mie_depth);
-
+	BMT *= atm_sun_mie_intensity
+		* mie_solar_factor
+		* atm_sun_mie_tint.rgb
+		* clamp_to_unit(depth * fog_mie_depth);
+		
 	vec3 BRMT = (BRT + BMT) / (beta_ray + beta_mie);
 	vec3 scatter = atm_sun_intensity * (BRMT * final_extc_factor) * atm_day_tint.rgb * mult.y;
 	scatter = mix(scatter, scatter * (1.0 - extc_factor), atm_darkness);
@@ -159,6 +179,42 @@ float calc_fog_factor(vec3 ray_direction, float ray_distance) {
 	return fog_factor;
 }
 
+float calc_mie_altitude_factor(float altitude) {
+	float safe_scale_height = max(mie_scale_height, 1.0);
+	float density = exp(-max(altitude, 0.0) / safe_scale_height);
+
+	return max(density, mie_min_density);
+}
+
+float calc_mie_solar_factor(float elevation_rad) {
+	float elevation_deg = degrees(elevation_rad);
+
+	// 1 near the horizon, 0 once the sun is sufficiently high.
+	float horizon_factor =
+		1.0 - smoothstep(
+			0.0,
+			mie_horizon_elevation_deg,
+			max(elevation_deg, 0.0)
+		);
+
+	// Fade the direct solar Mie contribution when the sun goes below
+	// the configured twilight range.
+	float daylight_factor =
+		smoothstep(
+			-mie_below_horizon_fade_deg,
+			0.0,
+			elevation_deg
+		);
+
+	float intensity = mix(
+		mie_zenith_intensity,
+		mie_horizon_intensity,
+		horizon_factor
+	);
+
+	return intensity * daylight_factor;
+}
+
 // Main
 void vertex() {
 	POSITION = vec4(VERTEX.xy, 1.0, 1.0);
@@ -204,8 +260,20 @@ void fragment() {
 
 	float sr, sm;
 	calc_simple_optical_depth(ray_direction.y + atm_level_params.z, sr, sm, atm_level_params.xy);
-	vec3 scatter = calc_atmospheric_scatter(sr, sm, sun_mu, v_angle_mult.xyz, ray_distance, altitude_sun_factor);
-
+	float mie_altitude_factor = calc_mie_altitude_factor(viewer_altitude);
+	float mie_solar_factor = calc_mie_solar_factor(solar_elevation_rad);
+	
+	vec3 scatter = calc_atmospheric_scatter(
+		sr,
+		sm,
+		sun_mu,
+		v_angle_mult.xyz,
+		ray_distance,
+		altitude_sun_factor,
+		mie_altitude_factor,
+		mie_solar_factor
+	);
+	
 	vec4 fog_color = vec4(scatter, fog_factor);
 	fog_color.a = clamp(fog_color.a, 0.0, 1.0);
 	fog_color.rgb = apply_photo_tonemap(fog_color.rgb, fog_exposure, tonemap_level);
