@@ -1,3 +1,6 @@
+# Ignore screenshots
+/test_project/screenshots
+
 # Ignore datasets
 *.dat
 
