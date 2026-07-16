@@ -227,6 +227,8 @@ func _update_fog() -> void:
 ## Texture Generation
 #####################
 func _generate_textures_for_altitudes() -> void:
+	var generation_start_usec: int = Time.get_ticks_usec()
+	
 	if sky_texture_generator == null:
 		push_error("sky_texture_generator is null")
 		return
@@ -247,6 +249,7 @@ func _generate_textures_for_altitudes() -> void:
 		parameters.get_altitude_density_power())
 	
 	precomputed_textures.clear()
+	
 	for i in range(0, texture_count):
 		var altitude = precomputed_altitudes[i]
 		var image: Image = sky_texture_generator.generate_texture(
@@ -256,13 +259,13 @@ func _generate_textures_for_altitudes() -> void:
 			parameters.get_visibility(),
 			parameters.get_resolution()
 		)
-
+		
 		if image == null:
 			push_error("Failed to generate sky texture for altitude: " + str(altitude))
 			continue
 
 		precomputed_textures.append(image)
-		
+	
 	if precomputed_textures.is_empty():
 		push_error("No sky texture images were generated.")
 		return
@@ -280,7 +283,14 @@ func _generate_textures_for_altitudes() -> void:
 	_update_sun()
 	_update_fog()
 	
-	print("%d textures were precomputed." % texture_count)
+	var generation_end_usec: int = Time.get_ticks_usec()
+	var generation_seconds: float = (
+		generation_end_usec - generation_start_usec
+	) / 1_000_000.0
+	
+	print("%d textures were precomputed in %.3f seconds."
+		% [precomputed_textures.size(), generation_seconds]
+	)
 
 #####################
 ## Setup
