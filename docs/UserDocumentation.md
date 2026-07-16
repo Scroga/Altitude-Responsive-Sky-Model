@@ -10,6 +10,7 @@ This repository also contains a `test_project` demonstrating the addon together 
 
 For information about the development environment, source code, and compiling the GDExtension, see [technical documentation](TechnicalDocumentation.md).
 
+
 ## Requirements
 
 * **Godot Engine 4.5**
