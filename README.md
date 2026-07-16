@@ -1,8 +1,6 @@
 # Altitude-Responsive Sky Model
 
-![Sky rendered at low altitude](docs/images/1.png)
-
-![Sky rendered at high altitude](docs/images/sky_high_altitude.png)
+![Sky rendered at different altitudes](docs/images/intro_examples_c.png)
 
 Altitude-responsive atmospheres for Godot 4, precomputed using the [Prague Sky Model](https://github.com/PetrVevoda/pragueskymodel).
 
